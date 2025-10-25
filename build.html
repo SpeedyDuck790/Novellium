@@ -1929,10 +1929,19 @@
         for (const [filename, dataUrl] of Object.entries(assets)) {
           statusDiv.innerHTML = `<p style="color: #ffa500; margin: 0;">⏳ Uploading ${filename} (${uploadedCount + 1}/${totalAssets})...</p>`;
           
-          // Convert data URL to file
+          // Convert data URL to file with proper MIME type
+          const mimeType = getMimeType(filename);
+          console.log(`Uploading ${filename} with MIME type: ${mimeType}`);
+          
+          // Convert data URL to blob with correct MIME type
           const response = await fetch(dataUrl);
-          const blob = await response.blob();
-          const file = new File([blob], filename);
+          const arrayBuffer = await response.arrayBuffer();
+          
+          // Create blob with correct MIME type
+          const blob = new Blob([arrayBuffer], { type: mimeType });
+          
+          // Create file with correct MIME type
+          const file = new File([blob], filename, { type: mimeType });
           
           // Upload to Supabase Storage
           const filePath = `${gameId}/${filename}`;
@@ -1940,7 +1949,8 @@
             .from('game-assets')
             .upload(filePath, file, {
               cacheControl: '3600',
-              upsert: true
+              upsert: true,
+              contentType: mimeType
             });
           
           if (uploadError) throw new Error(`Failed to upload ${filename}: ${uploadError.message}`);
@@ -2061,9 +2071,16 @@
         'png': 'image/png',
         'gif': 'image/gif',
         'webp': 'image/webp',
+        'svg': 'image/svg+xml',
+        'bmp': 'image/bmp',
+        'tiff': 'image/tiff',
         'mp3': 'audio/mpeg',
         'ogg': 'audio/ogg',
-        'wav': 'audio/wav'
+        'wav': 'audio/wav',
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
+        'json': 'application/json',
+        'txt': 'text/plain'
       };
       return mimeTypes[ext] || 'application/octet-stream';
     }
