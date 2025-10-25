@@ -1921,6 +1921,16 @@
       const gameId = project.info.id;
       const uploadedAssetUrls = {};
       
+      // Debug: Log all assets found in ZIP
+      console.log('Assets found in ZIP:', Object.keys(assets));
+      
+      // Debug: Log character sprites to update
+      project.characters.forEach(char => {
+        if (char.sprites && char.sprites.length > 0) {
+          console.log(`Character ${char.name} sprites:`, char.sprites);
+        }
+      });
+      
       try {
         // Upload each asset to Supabase Storage
         let uploadedCount = 0;
