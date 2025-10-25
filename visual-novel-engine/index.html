@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visual Novel Engine</title>
   <link rel="stylesheet" href="styles.css">
+  <style id="dynamic-theme">
+    /* Dynamic theme colors applied via JavaScript */
+  </style>
 </head>
 <body>
   <div class="app-container">
@@ -657,8 +660,9 @@
       document.getElementById('dialogue-opacity-value').textContent = document.getElementById('dialogue-bg-opacity').value;
     }
     
-    // Apply colors to CSS variables
+    // Apply colors to CSS variables AND dynamic style overrides
     function applyColors(colors) {
+      // Set CSS variables
       document.documentElement.style.setProperty('--primary-color', colors.primary);
       document.documentElement.style.setProperty('--secondary-color', colors.secondary);
       document.documentElement.style.setProperty('--background-color', colors.background);
@@ -667,6 +671,77 @@
       document.documentElement.style.setProperty('--dialogue-bg-opacity', colors.dialogueOpacity / 100);
       document.documentElement.style.setProperty('--button-color', colors.button);
       document.documentElement.style.setProperty('--button-hover-color', colors.buttonHover);
+      
+      // Create dynamic CSS overrides that target actual UI elements
+      const dynamicStyle = document.getElementById('dynamic-theme');
+      dynamicStyle.textContent = `
+        /* Primary color overrides */
+        .vertical-game-card.selected,
+        .carousel-game-card.selected,
+        .menu-header h3,
+        .sidebar-header h2,
+        .vertical-game-info h3,
+        .welcome-content h1,
+        .game-options-header h2,
+        .saves-section h3,
+        .settings-section h4,
+        h1, h2, h3, h4 {
+          color: ${colors.primary} !important;
+        }
+        
+        .vertical-game-card.selected,
+        .vertical-game-card:hover,
+        input:checked + .toggle-slider {
+          border-color: ${colors.primary} !important;
+        }
+        
+        input:checked + .toggle-slider:before {
+          background-color: ${colors.primary} !important;
+        }
+        
+        /* Button colors */
+        .game-action-btn.new-game,
+        .settings-btn.apply,
+        .nav-btn.primary {
+          background: linear-gradient(135deg, ${colors.button}, ${colors.buttonHover}) !important;
+        }
+        
+        .game-action-btn.new-game:hover,
+        .settings-btn.apply:hover {
+          box-shadow: 0 6px 20px ${colors.button}66 !important;
+        }
+        
+        /* Secondary color overrides */
+        .game-menu h1,
+        .welcome-section h1 {
+          background: linear-gradient(45deg, ${colors.primary}, ${colors.secondary}) !important;
+          -webkit-background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+          background-clip: text !important;
+        }
+        
+        /* Background color */
+        .start-screen,
+        .content-area,
+        .game-menu {
+          background: linear-gradient(135deg, ${colors.background}, ${colors.background}dd) !important;
+        }
+        
+        /* Text color */
+        body,
+        .app-container,
+        .save-name,
+        .vertical-game-card,
+        .setting-item label {
+          color: ${colors.text} !important;
+        }
+        
+        /* Dialogue box */
+        .dialogue-box {
+          background-color: ${colors.dialogueBg} !important;
+          opacity: ${colors.dialogueOpacity / 100} !important;
+        }
+      `;
     }
     
     // Color input change listeners
