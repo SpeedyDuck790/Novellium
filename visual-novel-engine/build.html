@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Novel Builder</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    .builder-container {
+      display: flex;
+      height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+    }
+
+    .builder-sidebar {
+      width: 250px;
+      background: rgba(0, 0, 0, 0.5);
+      border-right: 2px solid rgba(255, 215, 0, 0.3);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .builder-main {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .builder-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .builder-nav li {
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+
+    .builder-nav li:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-left-color: #ffd700;
+      transform: translateX(5px);
+    }
+
+    .builder-nav li.active {
+      background: rgba(255, 215, 0, 0.2);
+      border-left-color: #ffd700;
+    }
+
+    .builder-section {
+      display: none;
+      animation: fadeIn 0.3s;
+    }
+
+    .builder-section.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #ffd700;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #ffd700;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-right: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      color: #1a1a2e;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-danger {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+      border: 2px solid #ff6b6b;
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 107, 107, 0.4);
+    }
+
+    .section-header {
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .section-header h2 {
+      color: #ffd700;
+      margin: 0 0 5px 0;
+      font-size: 28px;
+    }
+
+    .section-header p {
+      color: #999;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .list-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .list-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .list-item-info h4 {
+      margin: 0 0 5px 0;
+      color: #ffd700;
+    }
+
+    .list-item-info p {
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+    }
+
+    .list-item-actions button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .event-builder {
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .event-type-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .event-type-btn {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .event-type-btn:hover,
+    .event-type-btn.selected {
+      border-color: #ffd700;
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .top-bar {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 15px 30px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top-bar h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ffd700;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="builder-container">
+    <!-- Sidebar Navigation -->
+    <div class="builder-sidebar">
+      <h2 style="color: #ffd700; margin-top: 0;">🎮 Builder</h2>
+      <ul class="builder-nav">
+        <li class="nav-item active" data-section="project">📁 Project Info</li>
+        <li class="nav-item" data-section="characters">👤 Characters</li>
+        <li class="nav-item" data-section="events">📖 Story Events</li>
+        <li class="nav-item" data-section="assets">🖼️ Assets</li>
+        <li class="nav-item" data-section="export">📦 Export/Build</li>
+      </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div style="flex: 1; display: flex; flex-direction: column;">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <h1>Visual Novel Builder</h1>
+        <div class="top-bar-actions">
+          <button class="btn btn-secondary" id="btn-preview">👁️ Preview</button>
+          <button class="btn btn-primary" id="btn-save-project">💾 Save Project</button>
+          <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 Back to Engine</button>
+        </div>
+      </div>
+
+      <div class="builder-main">
+        <!-- Project Info Section -->
+        <div class="builder-section active" id="section-project">
+          <div class="section-header">
+            <h2>📁 Project Information</h2>
+            <p>Set up your visual novel's basic information</p>
+          </div>
+
+          <div class="form-group">
+            <label>Game Title</label>
+            <input type="text" id="project-title" placeholder="My Amazing Visual Novel">
+            <p class="form-hint">The name of your visual novel</p>
+          </div>
+
+          <div class="form-group">
+            <label>Game ID</label>
+            <input type="text" id="project-id" placeholder="my-game">
+            <p class="form-hint">Lowercase, no spaces (used for folder name)</p>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="project-description" placeholder="A captivating story about..."></textarea>
+            <p class="form-hint">Brief description shown in game selection</p>
+          </div>
+
+          <div class="form-group">
+            <label>Author</label>
+            <input type="text" id="project-author" placeholder="Your Name">
+          </div>
+
+          <div class="form-group">
+            <label>Initial Event</label>
+            <input type="text" id="project-initial-event" placeholder="start" value="start">
+            <p class="form-hint">The first event ID when game starts</p>
+          </div>
+        </div>
+
+        <!-- Characters Section -->
+        <div class="builder-section" id="section-characters">
+          <div class="section-header">
+            <h2>👤 Characters</h2>
+            <p>Define characters that appear in your story</p>
+          </div>
+
+          <button class="btn btn-primary" id="btn-add-character">+ Add Character</button>
+
+          <div id="characters-list" style="margin-top: 20px;">
+            <!-- Character items will be added here -->
+          </div>
+
+          <!-- Character Edit Form (hidden by default) -->
+          <div id="character-form" style="display: none; margin-top: 20px;">
+            <div class="event-builder">
+              <h3 style="color: #ffd700;">Edit Character</h3>
+              <div class="form-group">
+                <label>Character ID</label>
+                <input type="text" id="char-id" placeholder="hero">
+              </div>
+              <div class="form-group">
+                <label>Display Name</label>
+                <input type="text" id="char-name" placeholder="Hero">
+              </div>
+              <div class="form-group">
+                <label>Color (hex)</label>
+                <input type="color" id="char-color" value="#ffd700">
+              </div>
+              <div class="form-group">
+                <label>Sprites (comma-separated filenames)</label>
+                <input type="text" id="char-sprites" placeholder="hero_neutral.png, hero_happy.png, hero_sad.png">
+                <p class="form-hint">Optional: character images for different expressions</p>
+              </div>
+              <button class="btn btn-primary" id="btn-save-character">Save Character</button>
+              <button class="btn btn-secondary" id="btn-cancel-character">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events Section -->
+        <div class="builder-section" id="section-events">
+          <div class="section-header">
+            <h2>📖 Story Events</h2>
+            <p>Create the narrative flow of your visual novel</p>
+          </div>
+
+          <button class="btn btn-primary" id="btn-add-event">+ Add Event</button>
+
+          <div id="events-list" style="margin-top: 20px;">
+            <!-- Event items will be added here -->
+          </div>
+
+          <!-- Event Edit Form (hidden by default) -->
+          <div id="event-form" style="display: none; margin-top: 20px;">
+            <div class="event-builder">
+              <h3 style="color: #ffd700;">Edit Event</h3>
+              
+              <div class="form-group">
+                <label>Event ID</label>
+                <input type="text" id="event-id" placeholder="start">
+                <p class="form-hint">Unique identifier for this event</p>
+              </div>
+
+              <div class="form-group">
+                <label>Event Type</label>
+                <div class="event-type-selector">
+                  <div class="event-type-btn" data-type="dialogue">💬 Dialogue</div>
+                  <div class="event-type-btn" data-type="choice">🔀 Choice</div>
+                  <div class="event-type-btn" data-type="scene">🎬 Scene</div>
+                  <div class="event-type-btn" data-type="narration">📝 Narration</div>
+                </div>
+              </div>
+
+              <!-- Common Fields -->
+              <div class="form-group">
+                <label>Background Image</label>
+                <input type="text" id="event-background" placeholder="backgrounds/forest_path.jpg">
+                <p class="form-hint">Path relative to game folder</p>
+              </div>
+
+              <!-- Dialogue-specific fields -->
+              <div id="dialogue-fields" style="display: none;">
+                <div class="form-group">
+                  <label>Character ID</label>
+                  <select id="event-character"></select>
+                </div>
+                <div class="form-group">
+                  <label>Dialogue Text</label>
+                  <textarea id="event-text" placeholder="What the character says..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Character Sprite</label>
+                  <input type="text" id="event-sprite" placeholder="characters/hero_neutral.png">
+                </div>
+                <div class="form-group">
+                  <label>Next Event</label>
+                  <input type="text" id="event-next" placeholder="next_event_id">
+                </div>
+              </div>
+
+              <!-- Choice-specific fields -->
+              <div id="choice-fields" style="display: none;">
+                <div class="form-group">
+                  <label>Choice Text</label>
+                  <textarea id="event-choice-text" placeholder="What choice is being presented?"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Options (one per line, format: text|next_event_id)</label>
+                  <textarea id="event-options" placeholder="Go left|path_left&#10;Go right|path_right"></textarea>
+                  <p class="form-hint">Format: Choice Text|next_event_id</p>
+                </div>
+              </div>
+
+              <!-- Narration-specific fields -->
+              <div id="narration-fields" style="display: none;">
+                <div class="form-group">
+                  <label>Narration Text</label>
+                  <textarea id="event-narration" placeholder="Narrative text..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Next Event</label>
+                  <input type="text" id="event-narration-next" placeholder="next_event_id">
+                </div>
+              </div>
+
+              <button class="btn btn-primary" id="btn-save-event">Save Event</button>
+              <button class="btn btn-secondary" id="btn-cancel-event">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assets Section -->
+        <div class="builder-section" id="section-assets">
+          <div class="section-header">
+            <h2>🖼️ Assets Management</h2>
+            <p>Upload and manage your game's visual and audio assets</p>
+          </div>
+
+          <div class="event-builder">
+            <h3 style="color: #ffd700;">Upload Assets</h3>
+            
+            <div class="form-group">
+              <label>Asset Type</label>
+              <select id="asset-type">
+                <option value="backgrounds">Background Images</option>
+                <option value="characters">Character Sprites</option>
+                <option value="music">Background Music</option>
+                <option value="sounds">Sound Effects</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Select Files</label>
+              <input type="file" id="asset-upload" multiple accept="image/*,audio/*">
+              <p class="form-hint">You can select multiple files at once</p>
+            </div>
+
+            <button class="btn btn-primary" id="btn-upload-assets">📤 Upload & Store Files</button>
+            <button class="btn btn-secondary" id="btn-download-all-assets">📥 Download All Assets</button>
+
+            <h4 style="color: #ffd700; margin-top: 30px;">Uploaded Assets</h4>
+            <div id="assets-list" style="max-height: 400px; overflow-y: auto;">
+              <p style="color: #999;">No assets uploaded yet</p>
+            </div>
+
+            <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 30px 0;">
+
+            <h3 style="color: #ffd700;">Asset Guidelines</h3>
+            <p>Recommended sizes and formats:</p>
+            <ul style="color: #ccc;">
+              <li><strong>Backgrounds:</strong> 1920x1080px (16:9 ratio) - .jpg or .png</li>
+              <li><strong>Character Sprites:</strong> 512x1024px (transparent PNG)</li>
+              <li><strong>Thumbnails:</strong> 400x225px (for game selection)</li>
+              <li><strong>Music:</strong> .mp3 or .ogg format</li>
+              <li><strong>Sound Effects:</strong> .mp3 or .ogg format</li>
+            </ul>
+
+            <p style="color: #ccc; margin-top: 20px;">
+              <strong>Note:</strong> Files are stored in browser storage. Use "Download All Assets" to export them as a zip file for deployment.
+            </p>
+          </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="builder-section" id="section-export">
+          <div class="section-header">
+            <h2>📦 Export & Build</h2>
+            <p>Generate your game files</p>
+          </div>
+
+          <div class="event-builder">
+            <h3 style="color: #ffd700;">Export Options</h3>
+            
+            <button class="btn btn-primary" id="btn-export-config" style="display: block; width: 100%; margin-bottom: 10px;">
+              📄 Export config.json
+            </button>
+            <p class="form-hint">Download the game configuration file</p>
+
+            <button class="btn btn-primary" id="btn-export-characters" style="display: block; width: 100%; margin-bottom: 10px;">
+              👤 Export characters.json
+            </button>
+            <p class="form-hint">Download the characters definition file</p>
+
+            <button class="btn btn-primary" id="btn-export-events" style="display: block; width: 100%; margin-bottom: 10px;">
+              📖 Export events.json
+            </button>
+            <p class="form-hint">Download the story events file</p>
+
+            <button class="btn btn-primary" id="btn-export-all" style="display: block; width: 100%; margin-bottom: 10px;">
+              📦 Export Complete Package
+            </button>
+            <p class="form-hint">Download all JSON files as a zip (coming soon)</p>
+
+            <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 30px 0;">
+
+            <h3 style="color: #ffd700;">Instructions</h3>
+            <ol style="color: #ccc; line-height: 1.8;">
+              <li>Export all JSON files using buttons above</li>
+              <li>Create folder: <code>gamefolder/[your-game-id]/</code></li>
+              <li>Place the JSON files in that folder</li>
+              <li>Add your asset files (backgrounds, characters, etc.)</li>
+              <li>Update <code>games-list.json</code> to include your game</li>
+              <li>Test in the Visual Novel Engine!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Project data structure
+    let projectData = {
+      info: {
+        title: '',
+        id: '',
+        description: '',
+        author: '',
+        initialEvent: 'start'
+      },
+      characters: [],
+      events: []
+    };
+
+    let editingCharacterIndex = -1;
+    let editingEventIndex = -1;
+
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        // Update nav
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        // Show section
+        const section = item.dataset.section;
+        document.querySelectorAll('.builder-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`section-${section}`).classList.add('active');
+      });
+    });
+
+    // Project Info - Auto-generate ID from title
+    document.getElementById('project-title').addEventListener('input', (e) => {
+      const title = e.target.value;
+      const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      document.getElementById('project-id').value = id;
+    });
+
+    // Save project info
+    function saveProjectInfo() {
+      projectData.info = {
+        title: document.getElementById('project-title').value,
+        id: document.getElementById('project-id').value,
+        description: document.getElementById('project-description').value,
+        author: document.getElementById('project-author').value,
+        initialEvent: document.getElementById('project-initial-event').value
+      };
+      localStorage.setItem('vn_builder_project', JSON.stringify(projectData));
+    }
+
+    // Load project from localStorage
+    function loadProject() {
+      const saved = localStorage.getItem('vn_builder_project');
+      if (saved) {
+        projectData = JSON.parse(saved);
+        
+        // Load project info
+        document.getElementById('project-title').value = projectData.info.title || '';
+        document.getElementById('project-id').value = projectData.info.id || '';
+        document.getElementById('project-description').value = projectData.info.description || '';
+        document.getElementById('project-author').value = projectData.info.author || '';
+        document.getElementById('project-initial-event').value = projectData.info.initialEvent || 'start';
+
+        // Refresh lists
+        refreshCharactersList();
+        refreshEventsList();
+      }
+    }
+
+    // Characters Management
+    document.getElementById('btn-add-character').addEventListener('click', () => {
+      editingCharacterIndex = -1;
+      document.getElementById('char-id').value = '';
+      document.getElementById('char-name').value = '';
+      document.getElementById('char-color').value = '#ffd700';
+      document.getElementById('char-sprites').value = '';
+      document.getElementById('character-form').style.display = 'block';
+    });
+
+    document.getElementById('btn-save-character').addEventListener('click', () => {
+      const character = {
+        id: document.getElementById('char-id').value,
+        name: document.getElementById('char-name').value,
+        color: document.getElementById('char-color').value,
+        sprites: document.getElementById('char-sprites').value.split(',').map(s => s.trim()).filter(s => s)
+      };
+
+      if (!character.id || !character.name) {
+        alert('Please fill in ID and Name');
+        return;
+      }
+
+      if (editingCharacterIndex === -1) {
+        projectData.characters.push(character);
+      } else {
+        projectData.characters[editingCharacterIndex] = character;
+      }
+
+      saveProjectInfo();
+      refreshCharactersList();
+      document.getElementById('character-form').style.display = 'none';
+    });
+
+    document.getElementById('btn-cancel-character').addEventListener('click', () => {
+      document.getElementById('character-form').style.display = 'none';
+    });
+
+    function refreshCharactersList() {
+      const list = document.getElementById('characters-list');
+      list.innerHTML = '';
+
+      if (projectData.characters.length === 0) {
+        list.innerHTML = '<p style="color: #999;">No characters yet. Click "Add Character" to create one.</p>';
+        return;
+      }
+
+      projectData.characters.forEach((char, index) => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+          <div class="list-item-info">
+            <h4>${char.name} (${char.id})</h4>
+            <p>Color: ${char.color} | Sprites: ${char.sprites.length || 0}</p>
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-secondary btn-edit-character" data-index="${index}">Edit</button>
+            <button class="btn btn-danger btn-delete-character" data-index="${index}">Delete</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      // Attach event listeners
+      document.querySelectorAll('.btn-edit-character').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = parseInt(btn.dataset.index);
+          editingCharacterIndex = index;
+          const char = projectData.characters[index];
+          document.getElementById('char-id').value = char.id;
+          document.getElementById('char-name').value = char.name;
+          document.getElementById('char-color').value = char.color;
+          document.getElementById('char-sprites').value = char.sprites.join(', ');
+          document.getElementById('character-form').style.display = 'block';
+        });
+      });
+
+      document.querySelectorAll('.btn-delete-character').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (confirm('Delete this character?')) {
+            const index = parseInt(btn.dataset.index);
+            projectData.characters.splice(index, 1);
+            saveProjectInfo();
+            refreshCharactersList();
+          }
+        });
+      });
+
+      // Update character dropdown in events
+      updateCharacterDropdown();
+    }
+
+    function updateCharacterDropdown() {
+      const select = document.getElementById('event-character');
+      select.innerHTML = '<option value="">Narrator</option>';
+      projectData.characters.forEach(char => {
+        select.innerHTML += `<option value="${char.id}">${char.name}</option>`;
+      });
+    }
+
+    // Events Management
+    document.getElementById('btn-add-event').addEventListener('click', () => {
+      editingEventIndex = -1;
+      document.getElementById('event-id').value = '';
+      document.getElementById('event-background').value = '';
+      document.querySelectorAll('.event-type-btn').forEach(btn => btn.classList.remove('selected'));
+      document.getElementById('event-form').style.display = 'block';
+      hideAllEventFields();
+    });
+
+    document.querySelectorAll('.event-type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.event-type-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        
+        const type = btn.dataset.type;
+        hideAllEventFields();
+        
+        if (type === 'dialogue') {
+          document.getElementById('dialogue-fields').style.display = 'block';
+        } else if (type === 'choice') {
+          document.getElementById('choice-fields').style.display = 'block';
+        } else if (type === 'narration') {
+          document.getElementById('narration-fields').style.display = 'block';
+        }
+      });
+    });
+
+    function hideAllEventFields() {
+      document.getElementById('dialogue-fields').style.display = 'none';
+      document.getElementById('choice-fields').style.display = 'none';
+      document.getElementById('narration-fields').style.display = 'none';
+    }
+
+    document.getElementById('btn-save-event').addEventListener('click', () => {
+      const selectedType = document.querySelector('.event-type-btn.selected');
+      if (!selectedType) {
+        alert('Please select an event type');
+        return;
+      }
+
+      const type = selectedType.dataset.type;
+      const eventId = document.getElementById('event-id').value;
+      const background = document.getElementById('event-background').value;
+
+      if (!eventId) {
+        alert('Please provide an Event ID');
+        return;
+      }
+
+      let event = {
+        id: eventId,
+        type: type,
+        background: background
+      };
+
+      if (type === 'dialogue') {
+        event.character = document.getElementById('event-character').value;
+        event.text = document.getElementById('event-text').value;
+        event.sprite = document.getElementById('event-sprite').value;
+        event.next = document.getElementById('event-next').value;
+      } else if (type === 'choice') {
+        event.text = document.getElementById('event-choice-text').value;
+        const optionsText = document.getElementById('event-options').value;
+        event.options = optionsText.split('\n').map(line => {
+          const [text, next] = line.split('|').map(s => s.trim());
+          return { text, next };
+        }).filter(opt => opt.text && opt.next);
+      } else if (type === 'narration') {
+        event.text = document.getElementById('event-narration').value;
+        event.next = document.getElementById('event-narration-next').value;
+      }
+
+      if (editingEventIndex === -1) {
+        projectData.events.push(event);
+      } else {
+        projectData.events[editingEventIndex] = event;
+      }
+
+      saveProjectInfo();
+      refreshEventsList();
+      document.getElementById('event-form').style.display = 'none';
+    });
+
+    document.getElementById('btn-cancel-event').addEventListener('click', () => {
+      document.getElementById('event-form').style.display = 'none';
+    });
+
+    function refreshEventsList() {
+      const list = document.getElementById('events-list');
+      list.innerHTML = '';
+
+      if (projectData.events.length === 0) {
+        list.innerHTML = '<p style="color: #999;">No events yet. Click "Add Event" to create one.</p>';
+        return;
+      }
+
+      projectData.events.forEach((event, index) => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        const preview = event.text ? event.text.substring(0, 50) + '...' : 'No text';
+        item.innerHTML = `
+          <div class="list-item-info">
+            <h4>${event.id} (${event.type})</h4>
+            <p>${preview}</p>
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-secondary btn-edit-event" data-index="${index}">Edit</button>
+            <button class="btn btn-danger btn-delete-event" data-index="${index}">Delete</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      // Attach event listeners
+      document.querySelectorAll('.btn-edit-event').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const index = parseInt(btn.dataset.index);
+          editingEventIndex = index;
+          const event = projectData.events[index];
+          
+          document.getElementById('event-id').value = event.id;
+          document.getElementById('event-background').value = event.background || '';
+          
+          // Select type
+          document.querySelectorAll('.event-type-btn').forEach(b => {
+            if (b.dataset.type === event.type) {
+              b.classList.add('selected');
+            } else {
+              b.classList.remove('selected');
+            }
+          });
+          
+          hideAllEventFields();
+          
+          if (event.type === 'dialogue') {
+            document.getElementById('dialogue-fields').style.display = 'block';
+            document.getElementById('event-character').value = event.character || '';
+            document.getElementById('event-text').value = event.text || '';
+            document.getElementById('event-sprite').value = event.sprite || '';
+            document.getElementById('event-next').value = event.next || '';
+          } else if (event.type === 'choice') {
+            document.getElementById('choice-fields').style.display = 'block';
+            document.getElementById('event-choice-text').value = event.text || '';
+            const optionsText = event.options.map(opt => `${opt.text}|${opt.next}`).join('\n');
+            document.getElementById('event-options').value = optionsText;
+          } else if (event.type === 'narration') {
+            document.getElementById('narration-fields').style.display = 'block';
+            document.getElementById('event-narration').value = event.text || '';
+            document.getElementById('event-narration-next').value = event.next || '';
+          }
+          
+          document.getElementById('event-form').style.display = 'block';
+        });
+      });
+
+      document.querySelectorAll('.btn-delete-event').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (confirm('Delete this event?')) {
+            const index = parseInt(btn.dataset.index);
+            projectData.events.splice(index, 1);
+            saveProjectInfo();
+            refreshEventsList();
+          }
+        });
+      });
+    }
+
+    // Export Functions
+    document.getElementById('btn-export-config').addEventListener('click', () => {
+      saveProjectInfo();
+      const config = {
+        title: projectData.info.title,
+        author: projectData.info.author,
+        initialEvent: projectData.info.initialEvent
+      };
+      downloadJSON('config.json', config);
+    });
+
+    document.getElementById('btn-export-characters').addEventListener('click', () => {
+      saveProjectInfo();
+      const characters = {};
+      projectData.characters.forEach(char => {
+        characters[char.id] = {
+          name: char.name,
+          color: char.color,
+          sprites: char.sprites.length > 0 ? char.sprites : undefined
+        };
+      });
+      downloadJSON('characters.json', { characters });
+    });
+
+    document.getElementById('btn-export-events').addEventListener('click', () => {
+      saveProjectInfo();
+      const events = {};
+      projectData.events.forEach(event => {
+        events[event.id] = { ...event };
+        delete events[event.id].id;
+      });
+      downloadJSON('events.json', { events });
+    });
+
+    function downloadJSON(filename, data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert(`${filename} downloaded!`);
+    }
+
+    // Save project button
+    document.getElementById('btn-save-project').addEventListener('click', () => {
+      saveProjectInfo();
+      alert('Project saved to browser storage!');
+    });
+
+    // Auto-save on field change
+    ['project-title', 'project-id', 'project-description', 'project-author', 'project-initial-event'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', saveProjectInfo);
+    });
+
+    // ===== ASSET MANAGEMENT =====
+    
+    // Store assets in IndexedDB for larger storage capacity
+    let assetsDB;
+    
+    function initAssetsDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('VNBuilderAssets', 1);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          assetsDB = request.result;
+          resolve(assetsDB);
+        };
+        
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('assets')) {
+            const objectStore = db.createObjectStore('assets', { keyPath: 'id', autoIncrement: true });
+            objectStore.createIndex('type', 'type', { unique: false });
+            objectStore.createIndex('filename', 'filename', { unique: false });
+            objectStore.createIndex('gameId', 'gameId', { unique: false });
+          }
+        };
+      });
+    }
+
+    function saveAssetToDB(asset) {
+      return new Promise((resolve, reject) => {
+        const transaction = assetsDB.transaction(['assets'], 'readwrite');
+        const objectStore = transaction.objectStore('assets');
+        const request = objectStore.add(asset);
+        
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function getAllAssets() {
+      return new Promise((resolve, reject) => {
+        const transaction = assetsDB.transaction(['assets'], 'readonly');
+        const objectStore = transaction.objectStore('assets');
+        const request = objectStore.getAll();
+        
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function deleteAssetFromDB(id) {
+      return new Promise((resolve, reject) => {
+        const transaction = assetsDB.transaction(['assets'], 'readwrite');
+        const objectStore = transaction.objectStore('assets');
+        const request = objectStore.delete(id);
+        
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    // Upload assets
+    document.getElementById('btn-upload-assets').addEventListener('click', async () => {
+      const fileInput = document.getElementById('asset-upload');
+      const assetType = document.getElementById('asset-type').value;
+      const gameId = projectData.info.id || 'default';
+      
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select files to upload');
+        return;
+      }
+
+      const uploadedCount = fileInput.files.length;
+      
+      for (const file of fileInput.files) {
+        const reader = new FileReader();
+        
+        await new Promise((resolve) => {
+          reader.onload = async (e) => {
+            const asset = {
+              filename: file.name,
+              type: assetType,
+              gameId: gameId,
+              mimeType: file.type,
+              size: file.size,
+              data: e.target.result,
+              uploadedAt: new Date().toISOString()
+            };
+            
+            await saveAssetToDB(asset);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      
+      alert(`${uploadedCount} file(s) uploaded successfully!`);
+      fileInput.value = '';
+      refreshAssetsList();
+    });
+
+    // Refresh assets list
+    async function refreshAssetsList() {
+      const assets = await getAllAssets();
+      const gameId = projectData.info.id || 'default';
+      const gameAssets = assets.filter(a => a.gameId === gameId);
+      
+      const list = document.getElementById('assets-list');
+      
+      if (gameAssets.length === 0) {
+        list.innerHTML = '<p style="color: #999;">No assets uploaded yet</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      
+      // Group by type
+      const grouped = {};
+      gameAssets.forEach(asset => {
+        if (!grouped[asset.type]) grouped[asset.type] = [];
+        grouped[asset.type].push(asset);
+      });
+
+      for (const [type, items] of Object.entries(grouped)) {
+        const section = document.createElement('div');
+        section.style.marginBottom = '20px';
+        
+        const header = document.createElement('h4');
+        header.style.color = '#ffd700';
+        header.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} (${items.length})`;
+        section.appendChild(header);
+
+        items.forEach(asset => {
+          const item = document.createElement('div');
+          item.className = 'list-item';
+          
+          const sizeKB = (asset.size / 1024).toFixed(1);
+          
+          item.innerHTML = `
+            <div class="list-item-info">
+              <h4>${asset.filename}</h4>
+              <p>${sizeKB} KB | ${new Date(asset.uploadedAt).toLocaleDateString()}</p>
+            </div>
+            <div class="list-item-actions">
+              <button class="btn btn-secondary btn-preview-asset" data-id="${asset.id}">👁️ Preview</button>
+              <button class="btn btn-secondary btn-download-asset" data-id="${asset.id}">💾 Download</button>
+              <button class="btn btn-danger btn-delete-asset" data-id="${asset.id}">Delete</button>
+            </div>
+          `;
+          section.appendChild(item);
+        });
+
+        list.appendChild(section);
+      }
+
+      // Attach event listeners
+      document.querySelectorAll('.btn-preview-asset').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = parseInt(btn.dataset.id);
+          const asset = gameAssets.find(a => a.id === id);
+          
+          if (asset.mimeType.startsWith('image/')) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            modal.innerHTML = `
+              <div style="max-width: 90%; max-height: 90%; position: relative;">
+                <img src="${asset.data}" style="max-width: 100%; max-height: 90vh; border-radius: 8px;">
+                <button style="position: absolute; top: 10px; right: 10px; padding: 10px 20px; background: #ff6b6b; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 16px;">Close</button>
+              </div>
+            `;
+            document.body.appendChild(modal);
+            modal.querySelector('button').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => {
+              if (e.target === modal) modal.remove();
+            });
+          } else {
+            alert('Preview not available for this file type');
+          }
+        });
+      });
+
+      document.querySelectorAll('.btn-download-asset').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = parseInt(btn.dataset.id);
+          const asset = gameAssets.find(a => a.id === id);
+          
+          const link = document.createElement('a');
+          link.href = asset.data;
+          link.download = asset.filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      });
+
+      document.querySelectorAll('.btn-delete-asset').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (confirm('Delete this asset?')) {
+            const id = parseInt(btn.dataset.id);
+            await deleteAssetFromDB(id);
+            refreshAssetsList();
+          }
+        });
+      });
+    }
+
+    // Download all assets as individual files
+    document.getElementById('btn-download-all-assets').addEventListener('click', async () => {
+      const assets = await getAllAssets();
+      const gameId = projectData.info.id || 'default';
+      const gameAssets = assets.filter(a => a.gameId === gameId);
+      
+      if (gameAssets.length === 0) {
+        alert('No assets to download');
+        return;
+      }
+
+      // Download each asset individually
+      for (const asset of gameAssets) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay between downloads
+        
+        const link = document.createElement('a');
+        link.href = asset.data;
+        link.download = `${asset.type}/${asset.filename}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      alert(`Downloaded ${gameAssets.length} asset(s)!\nOrganize them into: backgrounds/, characters/, music/, sounds/ folders.`);
+    });
+
+    // Initialize
+    initAssetsDB().then(() => {
+      loadProject();
+      refreshAssetsList();
+    });
+
+    // Load project on startup
+    loadProject();
+  </script>
+</body>
+</html>
