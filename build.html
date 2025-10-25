@@ -1674,12 +1674,33 @@
         
         statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Extracting files...</p>';
 
+        // Debug: List all files in the ZIP
+        console.log('Files in ZIP:');
+        Object.keys(contents.files).forEach(filename => {
+          console.log('- ' + filename);
+        });
+
+        // Find the game folder (look for the first folder that contains config.json)
+        let gameFolder = '';
+        const configPaths = Object.keys(contents.files).filter(path => path.endsWith('config.json'));
+        
+        if (configPaths.length === 0) {
+          throw new Error('No config.json found in ZIP file');
+        }
+        
+        // Use the first config.json found
+        const configPath = configPaths[0];
+        gameFolder = configPath.replace('config.json', '');
+        
+        console.log('Game folder detected:', gameFolder);
+        console.log('Config path:', configPath);
+
         // Extract JSON files
         let config, characters, events;
         
         try {
-          const configFile = contents.file('config.json');
-          if (!configFile) throw new Error('config.json not found in ZIP');
+          const configFile = contents.file(configPath);
+          if (!configFile) throw new Error(`config.json not found at ${configPath}`);
           config = JSON.parse(await configFile.async('string'));
           
           // Debug: Log the config structure
@@ -1694,8 +1715,9 @@
         }
 
         try {
-          const charactersFile = contents.file('characters.json');
-          if (!charactersFile) throw new Error('characters.json not found in ZIP');
+          const charactersPath = gameFolder + 'characters.json';
+          const charactersFile = contents.file(charactersPath);
+          if (!charactersFile) throw new Error(`characters.json not found at ${charactersPath}`);
           const charactersData = JSON.parse(await charactersFile.async('string'));
           characters = charactersData.characters || {};
         } catch (e) {
@@ -1703,30 +1725,46 @@
         }
 
         try {
-          const eventsFile = contents.file('events.json');
-          if (!eventsFile) throw new Error('events.json not found in ZIP');
+          const eventsPath = gameFolder + 'story.json';
+          let eventsFile = contents.file(eventsPath);
+          
+          // Try events.json if story.json doesn't exist
+          if (!eventsFile) {
+            const altEventsPath = gameFolder + 'events.json';
+            eventsFile = contents.file(altEventsPath);
+            if (!eventsFile) throw new Error(`Neither story.json nor events.json found in ${gameFolder}`);
+          }
+          
           const eventsData = JSON.parse(await eventsFile.async('string'));
           events = eventsData.events || {};
         } catch (e) {
-          throw new Error('Failed to load events.json: ' + e.message);
+          throw new Error('Failed to load events/story.json: ' + e.message);
         }
 
         statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Extracting assets...</p>';
 
-        // Extract assets
+        // Extract assets from the detected game folder
         const assets = {};
-        const assetFolders = ['backgrounds', 'characters', 'music', 'sounds', 'other'];
+        const assetFolders = ['backgrounds', 'sprites', 'characters', 'music', 'sounds', 'other'];
         
         for (const folder of assetFolders) {
-          const folderFiles = contents.folder(folder);
-          if (folderFiles) {
-            for (const [filename, fileObj] of Object.entries(folderFiles.files)) {
-              if (!fileObj.dir) {
-                const fileData = await fileObj.async('base64');
-                const mimeType = getMimeType(filename);
-                assets[filename] = `data:${mimeType};base64,${fileData}`;
-              }
-            }
+          const folderPath = gameFolder + folder + '/';
+          console.log('Looking for assets in:', folderPath);
+          
+          // Find all files in this folder
+          const folderFiles = Object.keys(contents.files).filter(path => 
+            path.startsWith(folderPath) && !contents.files[path].dir
+          );
+          
+          for (const filePath of folderFiles) {
+            const filename = filePath.split('/').pop(); // Get just the filename
+            const fileObj = contents.files[filePath];
+            
+            console.log('Processing asset:', filename, 'from', filePath);
+            
+            const fileData = await fileObj.async('base64');
+            const mimeType = getMimeType(filename);
+            assets[filename] = `data:${mimeType};base64,${fileData}`;
           }
         }
 
