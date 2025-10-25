@@ -1924,12 +1924,22 @@
       // Debug: Log all assets found in ZIP
       console.log('Assets found in ZIP:', Object.keys(assets));
       
+      // Debug: Log project structure  
+      console.log('Project info:', project.info);
+      console.log('Project characters:', project.characters);
+      console.log('Project events length:', project.events?.length);
+      
       // Debug: Log character sprites to update
-      project.characters.forEach(char => {
-        if (char.sprites && char.sprites.length > 0) {
-          console.log(`Character ${char.name} sprites:`, char.sprites);
-        }
-      });
+      if (project.characters && Array.isArray(project.characters)) {
+        project.characters.forEach(char => {
+          console.log(`Character ${char.name || char.id}:`, char);
+          if (char.sprites && char.sprites.length > 0) {
+            console.log(`  - Sprites:`, char.sprites);
+          }
+        });
+      } else {
+        console.log('Characters is not an array or is empty:', project.characters);
+      }
       
       try {
         // Upload each asset to Supabase Storage
