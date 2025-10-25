@@ -21,6 +21,14 @@ export class VisualNovelEngine {
   async loadGame(folderPath) {
     try {
       this.currentGameFolder = folderPath;
+      
+      // Check if this is a deployed game from localStorage
+      if (folderPath.startsWith('deployed/')) {
+        const gameId = folderPath.split('/')[1];
+        await this.loadDeployedGame(gameId);
+        return;
+      }
+      
       this.assetLoader = new AssetLoader(folderPath);
       
       // Load config
@@ -47,6 +55,77 @@ export class VisualNovelEngine {
       
     } catch (error) {
       this.renderer.showError(`Failed to load game: ${error.message}`);
+      console.error(error);
+    }
+  }
+
+  async loadDeployedGame(gameId) {
+    try {
+      console.log('Loading deployed game:', gameId);
+      
+      // Load game data from localStorage
+      const gameDataStr = localStorage.getItem(`vn_deployed_game_${gameId}`);
+      if (!gameDataStr) {
+        throw new Error('Deployed game data not found');
+      }
+      
+      const gameData = JSON.parse(gameDataStr);
+      
+      // Load assets data
+      const assetsStr = localStorage.getItem(`vn_deployed_assets_${gameId}`);
+      const assets = assetsStr ? JSON.parse(assetsStr) : {};
+      
+      // Set up config
+      this.config = {
+        ...gameData.config,
+        startEvent: gameData.config.initialEvent,
+        characters: 'characters.json',
+        story: 'events.json'
+      };
+      
+      // Create a custom asset loader for deployed games
+      this.assetLoader = {
+        folderPath: `deployed/${gameId}`,
+        assets: assets,
+        
+        async loadJSON(filename) {
+          // Return the already loaded data
+          if (filename === 'config.json') return gameData.config;
+          if (filename === 'characters.json') return { characters: gameData.characters };
+          if (filename === 'events.json') return { events: gameData.events };
+          return {};
+        },
+        
+        getAssetPath(path) {
+          // Return base64 data URL from stored assets
+          return this.assets[path] || path;
+        },
+        
+        async preloadImages(paths) {
+          // Images are already available as base64, so just validate
+          console.log('Preloading', paths.length, 'images from deployed assets');
+          return Promise.resolve();
+        }
+      };
+      
+      // Load characters
+      for (const [id, data] of Object.entries(gameData.characters)) {
+        this.characters.set(id, new Character(id, data));
+      }
+      
+      // Load events
+      for (const [id, data] of Object.entries(gameData.events)) {
+        this.events.set(id, new Event(id, data));
+      }
+      
+      console.log('Deployed game loaded. Characters:', this.characters.size, 'Events:', this.events.size);
+      
+      // Start game
+      this.gameState.setCurrentEvent(this.config.startEvent);
+      await this.renderCurrentEvent();
+      
+    } catch (error) {
+      this.renderer.showError(`Failed to load deployed game: ${error.message}`);
       console.error(error);
     }
   }

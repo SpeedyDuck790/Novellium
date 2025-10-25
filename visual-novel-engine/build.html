@@ -256,6 +256,106 @@
       display: flex;
       gap: 10px;
     }
+
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .mode-toggle label {
+      color: #ffd700;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .mode-switch {
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .mode-switch.active {
+      background: #ffd700;
+    }
+
+    .mode-switch-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .mode-switch.active .mode-switch-thumb {
+      left: 28px;
+    }
+
+    .json-editor-container {
+      display: none;
+      height: calc(100vh - 200px);
+    }
+
+    .json-editor-container.active {
+      display: block;
+    }
+
+    .json-editor {
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 8px;
+      color: #ffd700;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      resize: none;
+    }
+
+    .json-editor:focus {
+      outline: none;
+      border-color: #ffd700;
+    }
+
+    .json-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+      padding-bottom: 10px;
+    }
+
+    .json-tab {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px 8px 0 0;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .json-tab:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .json-tab.active {
+      background: rgba(255, 215, 0, 0.2);
+      border-color: #ffd700;
+      color: #ffd700;
+    }
   </style>
 </head>
 <body>
@@ -269,6 +369,7 @@
         <li class="nav-item" data-section="events">📖 Story Events</li>
         <li class="nav-item" data-section="assets">🖼️ Assets</li>
         <li class="nav-item" data-section="export">📦 Export/Build</li>
+        <li class="nav-item" data-section="import">📥 Import & Deploy</li>
       </ul>
     </div>
 
@@ -278,13 +379,37 @@
       <div class="top-bar">
         <h1>Visual Novel Builder</h1>
         <div class="top-bar-actions">
-          <button class="btn btn-secondary" id="btn-preview">👁️ Preview</button>
+          <div class="mode-toggle">
+            <label>Form Mode</label>
+            <div class="mode-switch" id="mode-switch">
+              <div class="mode-switch-thumb"></div>
+            </div>
+            <label>JSON Editor</label>
+          </div>
           <button class="btn btn-primary" id="btn-save-project">💾 Save Project</button>
           <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 Back to Engine</button>
         </div>
       </div>
 
       <div class="builder-main">
+        <!-- JSON Editor Mode -->
+        <div class="json-editor-container" id="json-editor-container">
+          <div class="section-header">
+            <h2 id="json-editor-title">📝 JSON Editor</h2>
+            <p id="json-editor-desc">Edit your project data directly in JSON format</p>
+          </div>
+
+          <textarea class="json-editor" id="json-editor" spellcheck="false"></textarea>
+          
+          <div style="margin-top: 20px;">
+            <button class="btn btn-primary" id="btn-apply-json">✅ Apply Changes</button>
+            <button class="btn btn-secondary" id="btn-format-json">🎨 Format JSON</button>
+            <button class="btn btn-secondary" id="btn-validate-json">✔️ Validate JSON</button>
+          </div>
+        </div>
+
+        <!-- Form Mode (existing sections) -->
+        <div id="form-mode-container">
         <!-- Project Info Section -->
         <div class="builder-section active" id="section-project">
           <div class="section-header">
@@ -533,28 +658,86 @@
             <p class="form-hint">Download the story events file</p>
 
             <button class="btn btn-primary" id="btn-export-all" style="display: block; width: 100%; margin-bottom: 10px;">
-              📦 Export Complete Package
+              📦 Export Complete Package (ZIP)
             </button>
-            <p class="form-hint">Download all JSON files as a zip (coming soon)</p>
+            <p class="form-hint">Download all JSON files and assets as a zip file</p>
 
             <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 30px 0;">
 
-            <h3 style="color: #ffd700;">Instructions</h3>
+            <h3 style="color: #ffd700;">Manual Installation Instructions</h3>
             <ol style="color: #ccc; line-height: 1.8;">
-              <li>Export all JSON files using buttons above</li>
-              <li>Create folder: <code>gamefolder/[your-game-id]/</code></li>
-              <li>Place the JSON files in that folder</li>
-              <li>Add your asset files (backgrounds, characters, etc.)</li>
+              <li>Export Complete Package (ZIP) using button above</li>
+              <li>Go to "📥 Import & Deploy" tab to upload and deploy</li>
+              <li>Or manually extract and place in <code>gamefolder/[your-game-id]/</code></li>
               <li>Update <code>games-list.json</code> to include your game</li>
               <li>Test in the Visual Novel Engine!</li>
             </ol>
           </div>
         </div>
+
+        <!-- Import & Deploy Section -->
+        <div class="builder-section" id="section-import">
+          <div class="section-header">
+            <h2>📥 Import & Deploy to Engine</h2>
+            <p>Upload a game package and deploy it to the Visual Novel Engine</p>
+          </div>
+
+          <div class="event-builder">
+            <h3 style="color: #ffd700;">Upload Game Package</h3>
+            <p style="color: #ccc;">Upload a ZIP file containing your game files (config.json, characters.json, events.json, and assets)</p>
+            
+            <div class="form-group">
+              <label>Select ZIP File</label>
+              <input type="file" id="import-zip-file" accept=".zip">
+              <p class="form-hint">Choose a game package created with "Export Complete Package"</p>
+            </div>
+
+            <button class="btn btn-primary" id="btn-import-and-deploy" style="display: block; width: 100%; background: linear-gradient(135deg, #00d4ff, #0099ff);">
+              🚀 Import & Deploy to Engine
+            </button>
+
+            <div id="import-status" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;">
+              <!-- Status messages will appear here -->
+            </div>
+          </div>
+
+          <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 30px 0;">
+
+          <div class="event-builder">
+            <h3 style="color: #ffd700;">Deploy Current Project</h3>
+            <p style="color: #ccc;">Deploy the game you're currently working on (from Project Info, Characters, Events, Assets tabs)</p>
+            
+            <button class="btn btn-primary" id="btn-deploy-current" style="display: block; width: 100%; background: linear-gradient(135deg, #ffd700, #ffed4e); color: #1a1a2e;">
+              🚀 Deploy Current Project
+            </button>
+
+            <div id="deploy-status" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;">
+              <!-- Status messages will appear here -->
+            </div>
+          </div>
+        </div>
+        </div><!-- End form-mode-container -->
       </div>
     </div>
   </div>
 
   <script type="module">
+    // Wait for JSZip to load
+    function waitForJSZip() {
+      return new Promise((resolve) => {
+        if (typeof JSZip !== 'undefined') {
+          resolve();
+        } else {
+          const checkInterval = setInterval(() => {
+            if (typeof JSZip !== 'undefined') {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+        }
+      });
+    }
+
     // Project data structure
     let projectData = {
       info: {
@@ -570,27 +753,9 @@
 
     let editingCharacterIndex = -1;
     let editingEventIndex = -1;
-
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', () => {
-        // Update nav
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-
-        // Show section
-        const section = item.dataset.section;
-        document.querySelectorAll('.builder-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(`section-${section}`).classList.add('active');
-      });
-    });
-
-    // Project Info - Auto-generate ID from title
-    document.getElementById('project-title').addEventListener('input', (e) => {
-      const title = e.target.value;
-      const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      document.getElementById('project-id').value = id;
-    });
+    let currentJsonTab = 'project';
+    let isJsonMode = false;
+    let currentSection = 'project';
 
     // Save project info
     function saveProjectInfo() {
@@ -620,6 +785,233 @@
         // Refresh lists
         refreshCharactersList();
         refreshEventsList();
+      }
+    }
+
+    // Setup navigation and ALL event listeners
+    function setupEventListeners() {
+      console.log('Setting up event listeners...');
+      
+      // Navigation
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          console.log('Nav clicked:', item.dataset.section);
+          // Update nav
+          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+
+          // Show section
+          const section = item.dataset.section;
+          currentSection = section;
+          
+          // Show/hide mode toggle based on section
+          const modeToggle = document.querySelector('.mode-toggle');
+          if (section === 'project' || section === 'characters' || section === 'events') {
+            modeToggle.style.display = 'flex';
+            // Update JSON tab to match section
+            if (isJsonMode) {
+              currentJsonTab = section;
+              loadJsonEditor();
+            }
+          } else {
+            modeToggle.style.display = 'none';
+            // Force back to form mode for other sections
+            if (isJsonMode) {
+              isJsonMode = false;
+              toggleMode();
+            }
+          }
+          
+          if (!isJsonMode) {
+            document.querySelectorAll('.builder-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section-${section}`).classList.add('active');
+          }
+        });
+      });
+
+      // Project Info - Auto-generate ID from title
+      document.getElementById('project-title')?.addEventListener('input', (e) => {
+        const title = e.target.value;
+        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        document.getElementById('project-id').value = id;
+      });
+
+      // Auto-save on field change
+      ['project-title', 'project-id', 'project-description', 'project-author', 'project-initial-event'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', saveProjectInfo);
+      });
+
+      // Save project button
+      document.getElementById('btn-save-project')?.addEventListener('click', () => {
+        saveProjectInfo();
+        alert('Project saved to browser storage!');
+      });
+
+      // Mode toggle
+      document.getElementById('mode-switch')?.addEventListener('click', () => {
+        isJsonMode = !isJsonMode;
+        currentJsonTab = currentSection; // Match JSON tab to current section
+        toggleMode();
+      });
+
+      // JSON tabs - removed since we auto-sync with navigation now
+
+      // JSON editor buttons
+      document.getElementById('btn-apply-json')?.addEventListener('click', () => {
+        applyJsonChanges();
+      });
+
+      document.getElementById('btn-format-json')?.addEventListener('click', () => {
+        formatJson();
+      });
+
+      document.getElementById('btn-validate-json')?.addEventListener('click', () => {
+        validateJson();
+      });
+    }
+
+    // Toggle between Form and JSON mode
+    function toggleMode() {
+      const modeSwitch = document.getElementById('mode-switch');
+      const formContainer = document.getElementById('form-mode-container');
+      const jsonContainer = document.getElementById('json-editor-container');
+      
+      if (isJsonMode) {
+        modeSwitch.classList.add('active');
+        formContainer.style.display = 'none';
+        jsonContainer.classList.add('active');
+        loadJsonEditor();
+      } else {
+        modeSwitch.classList.remove('active');
+        formContainer.style.display = 'block';
+        jsonContainer.classList.remove('active');
+      }
+    }
+
+    // Load current data into JSON editor
+    function loadJsonEditor() {
+      const editor = document.getElementById('json-editor');
+      const title = document.getElementById('json-editor-title');
+      const desc = document.getElementById('json-editor-desc');
+      let jsonData = {};
+
+      if (currentJsonTab === 'project') {
+        title.textContent = '📁 Project Info JSON';
+        desc.textContent = 'Edit project configuration (config.json)';
+        jsonData = {
+          title: projectData.info.title,
+          author: projectData.info.author,
+          description: projectData.info.description,
+          initialEvent: projectData.info.initialEvent
+        };
+      } else if (currentJsonTab === 'characters') {
+        title.textContent = '👤 Characters JSON';
+        desc.textContent = 'Edit character definitions (characters.json)';
+        const characters = {};
+        projectData.characters.forEach(char => {
+          characters[char.id] = {
+            name: char.name,
+            color: char.color,
+            sprites: char.sprites.length > 0 ? char.sprites : undefined
+          };
+        });
+        jsonData = { characters };
+      } else if (currentJsonTab === 'events') {
+        title.textContent = '📖 Story Events JSON';
+        desc.textContent = 'Edit story events (events.json)';
+        const events = {};
+        projectData.events.forEach(event => {
+          events[event.id] = { ...event };
+          delete events[event.id].id;
+        });
+        jsonData = { events };
+      }
+
+      editor.value = JSON.stringify(jsonData, null, 2);
+    }
+
+    // Apply JSON changes to project data
+    function applyJsonChanges() {
+      const editor = document.getElementById('json-editor');
+      
+      try {
+        const jsonData = JSON.parse(editor.value);
+
+        if (currentJsonTab === 'project') {
+          projectData.info.title = jsonData.title || '';
+          projectData.info.author = jsonData.author || '';
+          projectData.info.description = jsonData.description || '';
+          projectData.info.initialEvent = jsonData.initialEvent || 'start';
+          
+          // Auto-generate ID if title changed
+          if (jsonData.title) {
+            projectData.info.id = jsonData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          }
+        } else if (currentJsonTab === 'characters') {
+          projectData.characters = [];
+          if (jsonData.characters) {
+            Object.entries(jsonData.characters).forEach(([id, data]) => {
+              projectData.characters.push({
+                id: id,
+                name: data.name,
+                color: data.color,
+                sprites: data.sprites || []
+              });
+            });
+          }
+        } else if (currentJsonTab === 'events') {
+          projectData.events = [];
+          if (jsonData.events) {
+            Object.entries(jsonData.events).forEach(([id, data]) => {
+              projectData.events.push({
+                id: id,
+                ...data
+              });
+            });
+          }
+        }
+
+        saveProjectInfo();
+        alert('✅ JSON changes applied successfully!');
+        
+        // Refresh form views
+        if (projectData.info.title) {
+          document.getElementById('project-title').value = projectData.info.title;
+          document.getElementById('project-id').value = projectData.info.id || '';
+          document.getElementById('project-description').value = projectData.info.description || '';
+          document.getElementById('project-author').value = projectData.info.author || '';
+          document.getElementById('project-initial-event').value = projectData.info.initialEvent || 'start';
+        }
+        refreshCharactersList();
+        refreshEventsList();
+
+      } catch (error) {
+        alert('❌ JSON Error: ' + error.message);
+      }
+    }
+
+    // Format JSON with proper indentation
+    function formatJson() {
+      const editor = document.getElementById('json-editor');
+      
+      try {
+        const jsonData = JSON.parse(editor.value);
+        editor.value = JSON.stringify(jsonData, null, 2);
+        alert('✅ JSON formatted successfully!');
+      } catch (error) {
+        alert('❌ Cannot format invalid JSON: ' + error.message);
+      }
+    }
+
+    // Validate JSON syntax
+    function validateJson() {
+      const editor = document.getElementById('json-editor');
+      
+      try {
+        JSON.parse(editor.value);
+        alert('✅ JSON is valid!');
+      } catch (error) {
+        alert('❌ JSON Error: ' + error.message);
       }
     }
 
@@ -925,6 +1317,381 @@
       downloadJSON('events.json', { events });
     });
 
+    // Export complete package as ZIP
+    document.getElementById('btn-export-all').addEventListener('click', async () => {
+      saveProjectInfo();
+      
+      if (!projectData.info.id) {
+        alert('Please set a Game ID in Project Info first');
+        return;
+      }
+
+      const zip = new JSZip();
+      
+      // Add config.json
+      const config = {
+        title: projectData.info.title,
+        author: projectData.info.author,
+        initialEvent: projectData.info.initialEvent
+      };
+      zip.file('config.json', JSON.stringify(config, null, 2));
+
+      // Add characters.json
+      const characters = {};
+      projectData.characters.forEach(char => {
+        characters[char.id] = {
+          name: char.name,
+          color: char.color,
+          sprites: char.sprites.length > 0 ? char.sprites : undefined
+        };
+      });
+      zip.file('characters.json', JSON.stringify({ characters }, null, 2));
+
+      // Add events.json
+      const events = {};
+      projectData.events.forEach(event => {
+        events[event.id] = { ...event };
+        delete events[event.id].id;
+      });
+      zip.file('events.json', JSON.stringify({ events }, null, 2));
+
+      // Add assets
+      const assets = await getAllAssets();
+      const gameAssets = assets.filter(a => a.gameId === projectData.info.id);
+      
+      for (const asset of gameAssets) {
+        // Convert base64 to blob
+        const base64Data = asset.data.split(',')[1];
+        const binaryData = atob(base64Data);
+        const bytes = new Uint8Array(binaryData.length);
+        for (let i = 0; i < binaryData.length; i++) {
+          bytes[i] = binaryData.charCodeAt(i);
+        }
+        
+        // Add to appropriate folder
+        zip.file(`${asset.type}/${asset.filename}`, bytes);
+      }
+
+      // Generate and download zip
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${projectData.info.id}-complete.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('Complete game package downloaded as ZIP!');
+    });
+
+    // Deploy game to engine
+    document.getElementById('btn-deploy-current').addEventListener('click', async () => {
+      await deployGameToEngine(projectData, 'deploy-status');
+    });
+
+    // Import and deploy ZIP file
+    document.getElementById('btn-import-and-deploy').addEventListener('click', async () => {
+      const fileInput = document.getElementById('import-zip-file');
+      const statusDiv = document.getElementById('import-status');
+      
+      if (!fileInput.files || fileInput.files.length === 0) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #ff6b6b';
+        statusDiv.innerHTML = '<p style="color: #ff6b6b; margin: 0;">❌ Please select a ZIP file first</p>';
+        return;
+      }
+
+      const zipFile = fileInput.files[0];
+      
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = 'rgba(255, 165, 0, 0.2)';
+      statusDiv.style.borderLeft = '4px solid #ffa500';
+      statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Reading ZIP file...</p>';
+
+      try {
+        // Read ZIP file
+        const zip = new JSZip();
+        const contents = await zip.loadAsync(zipFile);
+        
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Extracting files...</p>';
+
+        // Extract JSON files
+        let config, characters, events;
+        
+        try {
+          const configFile = contents.file('config.json');
+          if (!configFile) throw new Error('config.json not found in ZIP');
+          config = JSON.parse(await configFile.async('string'));
+        } catch (e) {
+          throw new Error('Failed to load config.json: ' + e.message);
+        }
+
+        try {
+          const charactersFile = contents.file('characters.json');
+          if (!charactersFile) throw new Error('characters.json not found in ZIP');
+          const charactersData = JSON.parse(await charactersFile.async('string'));
+          characters = charactersData.characters || {};
+        } catch (e) {
+          throw new Error('Failed to load characters.json: ' + e.message);
+        }
+
+        try {
+          const eventsFile = contents.file('events.json');
+          if (!eventsFile) throw new Error('events.json not found in ZIP');
+          const eventsData = JSON.parse(await eventsFile.async('string'));
+          events = eventsData.events || {};
+        } catch (e) {
+          throw new Error('Failed to load events.json: ' + e.message);
+        }
+
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Extracting assets...</p>';
+
+        // Extract assets
+        const assets = {};
+        const assetFolders = ['backgrounds', 'characters', 'music', 'sounds', 'other'];
+        
+        for (const folder of assetFolders) {
+          const folderFiles = contents.folder(folder);
+          if (folderFiles) {
+            for (const [filename, fileObj] of Object.entries(folderFiles.files)) {
+              if (!fileObj.dir) {
+                const fileData = await fileObj.async('base64');
+                const mimeType = getMimeType(filename);
+                assets[filename] = `data:${mimeType};base64,${fileData}`;
+              }
+            }
+          }
+        }
+
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Validating game data...</p>';
+
+        // Generate game ID from title if not present
+        const gameId = config.gameId || config.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+        // Create project data structure for validation
+        const importedProject = {
+          info: {
+            title: config.title,
+            id: gameId,
+            description: config.description || '',
+            author: config.author || '',
+            initialEvent: config.initialEvent || config.startEvent || 'start'
+          },
+          characters: Object.entries(characters).map(([id, data]) => ({
+            id: id,
+            name: data.name,
+            color: data.color,
+            sprites: data.sprites || []
+          })),
+          events: Object.entries(events).map(([id, data]) => ({
+            id: id,
+            ...data
+          }))
+        };
+
+        // Store assets temporarily
+        window.importedAssets = assets;
+        window.importedGameId = gameId;
+
+        // Deploy the imported game
+        await deployGameToEngine(importedProject, 'import-status', assets, gameId);
+
+        // Clear file input
+        fileInput.value = '';
+
+      } catch (error) {
+        console.error('Import error:', error);
+        statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #ff6b6b';
+        statusDiv.innerHTML = `
+          <h4 style="color: #ff6b6b; margin: 0 0 10px 0;">❌ Import Failed</h4>
+          <p style="color: #ff6b6b; margin: 0;">${error.message}</p>
+        `;
+      }
+    });
+
+    function getMimeType(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const mimeTypes = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+        'mp3': 'audio/mpeg',
+        'ogg': 'audio/ogg',
+        'wav': 'audio/wav'
+      };
+      return mimeTypes[ext] || 'application/octet-stream';
+    }
+
+    async function deployGameToEngine(project, statusDivId, assetsOverride = null, gameIdOverride = null) {
+      const statusDiv = document.getElementById(statusDivId);
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = 'rgba(255, 165, 0, 0.2)';
+      statusDiv.style.borderLeft = '4px solid #ffa500';
+      statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Validating game data...</p>';
+
+      // Validation
+      const errors = [];
+      
+      if (!project.info.id) errors.push('Game ID is required');
+      if (!project.info.title) errors.push('Game title is required');
+      if (!project.info.initialEvent) errors.push('Initial event is required');
+      if (project.events.length === 0) errors.push('At least one event is required');
+      
+      // Check if initial event exists
+      const hasInitialEvent = project.events.some(e => e.id === project.info.initialEvent);
+      if (!hasInitialEvent) errors.push(`Initial event "${project.info.initialEvent}" not found in events`);
+
+      // Validate event linkage
+      const eventIds = new Set(project.events.map(e => e.id));
+      project.events.forEach(event => {
+        if (event.next && !eventIds.has(event.next)) {
+          errors.push(`Event "${event.id}" links to non-existent event "${event.next}"`);
+        }
+        if (event.options) {
+          event.options.forEach(opt => {
+            if (opt.next && !eventIds.has(opt.next)) {
+              errors.push(`Event "${event.id}" option links to non-existent event "${opt.next}"`);
+            }
+          });
+        }
+      });
+
+      if (errors.length > 0) {
+        statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #ff6b6b';
+        statusDiv.innerHTML = `
+          <h4 style="color: #ff6b6b; margin: 0 0 10px 0;">❌ Validation Failed</h4>
+          <ul style="color: #ff6b6b; margin: 0; padding-left: 20px;">
+            ${errors.map(e => `<li>${e}</li>`).join('')}
+          </ul>
+          <p style="color: #ccc; margin: 10px 0 0 0; font-size: 12px;">Fix these issues and try again.</p>
+        `;
+        return;
+      }
+
+      statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">✅ Validation passed! Deploying game...</p>';
+
+      try {
+        // Create game data structure
+        const gameData = {
+          config: {
+            title: project.info.title,
+            author: project.info.author,
+            initialEvent: project.info.initialEvent
+          },
+          characters: {},
+          events: {}
+        };
+
+        project.characters.forEach(char => {
+          gameData.characters[char.id] = {
+            name: char.name,
+            color: char.color,
+            sprites: char.sprites.length > 0 ? char.sprites : undefined
+          };
+        });
+
+        project.events.forEach(event => {
+          gameData.events[event.id] = { ...event };
+          delete gameData.events[event.id].id;
+        });
+
+        const gameId = gameIdOverride || project.info.id;
+
+        // Store game data in localStorage
+        localStorage.setItem(`vn_deployed_game_${gameId}`, JSON.stringify(gameData));
+        
+        // Get assets - either from override or from indexed DB
+        let assetData = {};
+        if (assetsOverride) {
+          assetData = assetsOverride;
+        } else {
+          const assets = await getAllAssets();
+          const gameAssets = assets.filter(a => a.gameId === gameId);
+          gameAssets.forEach(asset => {
+            const path = `${asset.type}/${asset.filename}`;
+            assetData[path] = asset.data;
+          });
+        }
+        
+        localStorage.setItem(`vn_deployed_assets_${gameId}`, JSON.stringify(assetData));
+
+        // Add to games list
+        let gamesList = [];
+        try {
+          const gamesListData = localStorage.getItem('vn_games_list');
+          if (gamesListData) {
+            gamesList = JSON.parse(gamesListData);
+          }
+        } catch (e) {
+          console.error('Error loading games list:', e);
+        }
+
+        // Check if game already exists
+        const existingIndex = gamesList.findIndex(g => g.id === gameId);
+        
+        // Find a thumbnail
+        let thumbnail = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgZmlsbD0iIzFhMWEyZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmQ3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5HYW1lPC90ZXh0Pjwvc3ZnPg==';
+        for (const [path, data] of Object.entries(assetData)) {
+          if (path.startsWith('backgrounds/') && data.startsWith('data:image')) {
+            thumbnail = data;
+            break;
+          }
+        }
+
+        const gameListEntry = {
+          id: gameId,
+          title: project.info.title,
+          description: project.info.description || 'No description provided',
+          thumbnail: thumbnail,
+          folder: `deployed/${gameId}`,
+          deployed: true
+        };
+
+        if (existingIndex !== -1) {
+          gamesList[existingIndex] = gameListEntry;
+        } else {
+          gamesList.push(gameListEntry);
+        }
+
+        localStorage.setItem('vn_games_list', JSON.stringify(gamesList));
+
+        const assetCount = Object.keys(assetData).length;
+
+        statusDiv.style.background = 'rgba(0, 255, 0, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #00ff00';
+        statusDiv.innerHTML = `
+          <h4 style="color: #00ff00; margin: 0 0 10px 0;">✅ Deployment Successful!</h4>
+          <p style="color: #ccc; margin: 0;">Your game has been added to the Visual Novel Engine.</p>
+          <p style="color: #ccc; margin: 10px 0 0 0;">
+            <strong>Game ID:</strong> ${gameId}<br>
+            <strong>Title:</strong> ${project.info.title}<br>
+            <strong>Events:</strong> ${project.events.length}<br>
+            <strong>Characters:</strong> ${project.characters.length}<br>
+            <strong>Assets:</strong> ${assetCount}
+          </p>
+          <button class="btn btn-primary" onclick="window.location.href='index.html'" style="margin-top: 15px; width: 100%;">
+            🎮 Go to Engine and Play
+          </button>
+        `;
+
+      } catch (error) {
+        console.error('Deployment error:', error);
+        statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #ff6b6b';
+        statusDiv.innerHTML = `
+          <h4 style="color: #ff6b6b; margin: 0 0 10px 0;">❌ Deployment Failed</h4>
+          <p style="color: #ff6b6b; margin: 0;">${error.message}</p>
+        `;
+      }
+    }
+
     function downloadJSON(filename, data) {
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -937,17 +1704,6 @@
       URL.revokeObjectURL(url);
       alert(`${filename} downloaded!`);
     }
-
-    // Save project button
-    document.getElementById('btn-save-project').addEventListener('click', () => {
-      saveProjectInfo();
-      alert('Project saved to browser storage!');
-    });
-
-    // Auto-save on field change
-    ['project-title', 'project-id', 'project-description', 'project-author', 'project-initial-event'].forEach(id => {
-      document.getElementById(id)?.addEventListener('change', saveProjectInfo);
-    });
 
     // ===== ASSET MANAGEMENT =====
     
@@ -1181,13 +1937,30 @@
     });
 
     // Initialize
-    initAssetsDB().then(() => {
+    async function initialize() {
+      console.log('Initializing builder...');
+      await waitForJSZip();
+      console.log('JSZip loaded');
+      setupEventListeners();
+      console.log('Event listeners set up');
+      
+      // Initialize mode toggle visibility (show only for project/characters/events)
+      const modeToggle = document.querySelector('.mode-toggle');
+      if (currentSection === 'project' || currentSection === 'characters' || currentSection === 'events') {
+        modeToggle.style.display = 'flex';
+      } else {
+        modeToggle.style.display = 'none';
+      }
+      
+      await initAssetsDB();
+      console.log('Assets DB initialized');
       loadProject();
+      console.log('Project loaded');
       refreshAssetsList();
-    });
+      console.log('Assets list refreshed');
+    }
 
-    // Load project on startup
-    loadProject();
+    initialize();
   </script>
 </body>
 </html>

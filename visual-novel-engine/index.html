@@ -198,6 +198,22 @@
       try {
         const response = await fetch('./games-list.json');
         gamesList = await response.json();
+        
+        // Merge with deployed games from localStorage
+        const deployedGames = localStorage.getItem('vn_games_list');
+        if (deployedGames) {
+          try {
+            const deployed = JSON.parse(deployedGames);
+            if (Array.isArray(deployed) && deployed.length > 0) {
+              // Add deployed games to the list
+              gamesList.games = [...gamesList.games, ...deployed];
+              console.log('Added', deployed.length, 'deployed games');
+            }
+          } catch (e) {
+            console.error('Error parsing deployed games:', e);
+          }
+        }
+        
         console.log('Games list loaded:', gamesList);
         populateGamesCarousel();
       } catch (error) {
