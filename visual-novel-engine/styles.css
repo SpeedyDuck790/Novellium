@@ -1,3 +1,9 @@
+/* Scaling removed - back to normal size */
+body {
+  margin: 0;
+  padding: 0;
+}
+
 /* Game Menu Styles */
 .game-menu {
   display: flex;
