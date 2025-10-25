@@ -166,6 +166,12 @@
         
         console.log(`Games loaded: ${gamesList.games.length} total (${gamesList.games.filter(g => g.source === 'local').length} local, ${gamesList.games.filter(g => g.source === 'cloud').length} cloud)`);
         
+        // Debug: Log cloud games to check folder property
+        const debugCloudGames = gamesList.games.filter(g => g.source === 'cloud');
+        if (debugCloudGames.length > 0) {
+          console.log('Cloud games folder mapping:', debugCloudGames.map(g => ({ title: g.title, folder: g.folder, gameFolder: g.gameFolder })));
+        }
+        
         // Show cloud status
         const cloudGames = gamesList.games.filter(g => g.source === 'cloud');
         if (cloudGames.length > 0) {
