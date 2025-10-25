@@ -9,5 +9,12 @@
     "interactive-fiction",
     "novellium"
   ],
-  "author": "James Hill"
+  "author": "James Hill",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "scripts": {
+    "start": "http-server -p 8000 -c-1",
+    "dev": "http-server -p 8000 -c-1"
+  }
 }

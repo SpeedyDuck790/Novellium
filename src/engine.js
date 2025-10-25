@@ -3,6 +3,7 @@ import { Event } from './models/Event.js';
 import { GameState } from './models/GameState.js';
 import { AssetLoader } from './managers/AssetLoader.js';
 import { SaveManager } from './managers/SaveManager.js';
+import { cloudGameManager } from './managers/CloudGameManager.js';
 import { Renderer } from './ui/Renderer.js';
 
 export class VisualNovelEngine {
@@ -22,32 +23,20 @@ export class VisualNovelEngine {
     try {
       this.currentGameFolder = folderPath;
       
+      // Check if this is a cloud game
+      if (folderPath.startsWith('cloud_')) {
+        const cloudId = folderPath.replace('cloud_', '');
+        await this.loadCloudGame(cloudId);
+      }
       // Check if this is a deployed game from localStorage
-      if (folderPath.startsWith('deployed/')) {
+      else if (folderPath.startsWith('deployed/')) {
         const gameId = folderPath.split('/')[1];
         await this.loadDeployedGame(gameId);
-        return;
       }
-      
-      this.assetLoader = new AssetLoader(folderPath);
-      
-      // Load config
-      this.config = await this.assetLoader.loadJSON('config.json');
-      
-      // Load characters
-      const charactersData = await this.assetLoader.loadJSON(this.config.characters);
-      for (const [id, data] of Object.entries(charactersData.characters)) {
-        this.characters.set(id, new Character(id, data));
+      // Load local game
+      else {
+        await this.loadLocalGame(folderPath);
       }
-      
-      // Load story
-      const storyData = await this.assetLoader.loadJSON(this.config.story);
-      for (const [id, data] of Object.entries(storyData.events)) {
-        this.events.set(id, new Event(id, data));
-      }
-      
-      // Preload commonly used assets
-      await this.preloadAssets();
       
       // Start game
       this.gameState.setCurrentEvent(this.config.startEvent);
@@ -56,6 +45,105 @@ export class VisualNovelEngine {
     } catch (error) {
       this.renderer.showError(`Failed to load game: ${error.message}`);
       console.error(error);
+    }
+  }
+
+  async loadLocalGame(folderPath) {
+    this.assetLoader = new AssetLoader(folderPath);
+    
+    // Load config
+    this.config = await this.assetLoader.loadJSON('config.json');
+    
+    // Load characters
+    const charactersData = await this.assetLoader.loadJSON(this.config.characters);
+    for (const [id, data] of Object.entries(charactersData.characters)) {
+      this.characters.set(id, new Character(id, data));
+    }
+    
+    // Load story
+    const storyData = await this.assetLoader.loadJSON(this.config.story);
+    for (const [id, data] of Object.entries(storyData.events)) {
+      this.events.set(id, new Event(id, data));
+    }
+      
+    // Preload commonly used assets
+    await this.preloadAssets();
+      
+    console.log('Local game loaded successfully');
+  }
+
+  async loadCloudGame(cloudId) {
+    try {
+      // Get game data from cloud
+      const gameData = await cloudGameManager.getGameData(cloudId, 'cloud');
+      
+      // Record download for analytics
+      await cloudGameManager.recordDownload(cloudId, 'cloud');
+      
+      // Set up config
+      this.config = gameData.config;
+      
+      // Load characters
+      for (const [id, data] of Object.entries(gameData.characters)) {
+        this.characters.set(id, new Character(id, data));
+      }
+      
+      // Load events
+      for (const [id, data] of Object.entries(gameData.events)) {
+        this.events.set(id, new Event(id, data));
+      }
+
+      // Create cloud asset loader
+      this.assetLoader = {
+        async loadImage(filename) {
+          // Find asset in cloud game data
+          const asset = gameData.assets?.find(a => 
+            a.asset_name === filename && 
+            (a.asset_type === 'background' || a.asset_type === 'sprite')
+          );
+          
+          if (asset) {
+            return new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = reject;
+              img.src = asset.file_path;
+            });
+          }
+          
+          throw new Error(`Cloud asset not found: ${filename}`);
+        },
+        
+        async loadAudio(filename) {
+          const asset = gameData.assets?.find(a => 
+            a.asset_name === filename && 
+            (a.asset_type === 'audio' || a.asset_type === 'music')
+          );
+          
+          if (asset) {
+            return new Promise((resolve, reject) => {
+              const audio = new Audio(asset.file_path);
+              audio.oncanplaythrough = () => resolve(audio);
+              audio.onerror = reject;
+            });
+          }
+          
+          throw new Error(`Cloud audio not found: ${filename}`);
+        },
+        
+        async loadJSON(filename) {
+          // For cloud games, data is already loaded
+          if (filename === 'config.json') return gameData.config;
+          if (filename === 'characters.json') return { characters: gameData.characters };
+          if (filename === 'events.json') return { events: gameData.events };
+          throw new Error(`Cloud JSON not found: ${filename}`);
+        }
+      };
+      
+      console.log('Cloud game loaded successfully:', cloudId);
+    } catch (error) {
+      console.error('Error loading cloud game:', error);
+      throw error;
     }
   }
 
