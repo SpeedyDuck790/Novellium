@@ -3,7 +3,55 @@
     <button id="btn-home" class="nav-btn" onclick="window.location.href='index.html'">📚 Library</button>
     <h3 id="current-page-title" style="margin: 0; cursor: pointer; font-size: 1.5rem;" onclick="window.location.href='index.html'"><span class="brand-gradient">Novellium</span></h3>
     <button id="btn-builder" class="nav-btn" onclick="window.location.href='build.html'">🔧 Builder</button>
+    
+    <!-- Documentation Dropdown -->
+    <div class="dropdown-container" style="position: relative;">
+      <button id="btn-docs" class="nav-btn dropdown-toggle">📖 Documentation</button>
+      <div class="dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; background: rgba(0, 0, 0, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 10px; min-width: 200px; z-index: 1000;">
+        <a href="docs/pdf-viewer.html?file=README" class="dropdown-item" style="display: block; padding: 8px 12px; color: #fff; text-decoration: none; border-radius: 4px; margin-bottom: 5px;">📋 Project Overview</a>
+        <a href="docs/pdf-viewer.html?file=USER-GUIDE" class="dropdown-item" style="display: block; padding: 8px 12px; color: #fff; text-decoration: none; border-radius: 4px; margin-bottom: 5px;">👤 User Guide</a>
+        <a href="docs/pdf-viewer.html?file=GAME-FORMAT" class="dropdown-item" style="display: block; padding: 8px 12px; color: #fff; text-decoration: none; border-radius: 4px;">⚙️ Technical Specs</a>
+      </div>
+    </div>
+    
     <button id="btn-save" class="nav-btn" style="display: none;">💾 Save</button>
     <button id="btn-menu" class="nav-btn">⚙️ Settings</button>
   </div>
 </nav>
+
+<style>
+.dropdown-container:hover .dropdown-menu {
+  display: block !important;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-toggle::after {
+  content: ' ▼';
+  font-size: 0.8em;
+}
+</style>
+
+<script>
+// Handle dropdown toggle
+document.addEventListener('DOMContentLoaded', function() {
+  const dropdownToggle = document.getElementById('btn-docs');
+  const dropdownMenu = document.querySelector('.dropdown-menu');
+  
+  if (dropdownToggle && dropdownMenu) {
+    dropdownToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.style.display = 'none';
+      }
+    });
+  }
+});
+</script>
