@@ -2006,7 +2006,9 @@
           if (char.sprites && Array.isArray(char.sprites)) {
             char.sprites = char.sprites.map(sprite => {
               const filename = sprite.split('/').pop();
-              return uploadedAssetUrls[filename] || sprite;
+              const cloudUrl = uploadedAssetUrls[filename];
+              console.log(`Updating sprite ${sprite} -> filename: ${filename} -> cloudUrl: ${cloudUrl || 'NOT FOUND'}`);
+              return cloudUrl || sprite;
             });
           }
         });

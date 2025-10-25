@@ -75,8 +75,8 @@ export class CloudGameManager {
       return gamesList.games.map(game => ({
         ...game,
         source: 'local',
-        gameFolder: game.gameFolder,
-        folder: game.gameFolder, // Add folder property for compatibility
+        gameFolder: game.folder, // Map folder to gameFolder for consistency
+        folder: game.folder, // Keep original folder property
         isLocal: true
       }))
     } catch (error) {
