@@ -11,19 +11,8 @@
 </head>
 <body>
   <div class="app-container">
-    <nav class="navbar">
-      <div class="nav-left">
-        <button id="btn-home" class="nav-btn primary">🏠 Home</button>
-        <button id="btn-builder" class="nav-btn" onclick="window.location.href='build.html'">🔧 Builder</button>
-      </div>
-      <div class="nav-center">
-        <h3 id="current-game-title">Novellium</h3>
-      </div>
-      <div class="nav-right">
-        <button id="btn-save" class="nav-btn">💾 Save</button>
-        <button id="btn-menu" class="nav-btn">⚙️ Settings</button>
-      </div>
-    </nav>
+    <!-- Navbar will be loaded here -->
+    <div id="navbar-container"></div>
     
     <!-- Settings panel (right side) -->
     <div id="slide-menu" class="slide-menu">
@@ -147,7 +136,7 @@
     // Load games list
     async function loadGamesList() {
       try {
-        const response = await fetch('./games-list.json');
+        const response = await fetch(`./games-list.json?v=${Date.now()}`);
         gamesList = await response.json();
         
         // Merge with deployed games from localStorage
@@ -203,6 +192,7 @@
           </div>
           <div class="vertical-game-info">
             <h3>${game.title}</h3>
+            <p style="color: #ffd700; font-size: 0.85em; margin: 5px 0;">By ${game.author || 'Anonymous'}</p>
             <p>${game.description}</p>
           </div>
         `;
@@ -233,6 +223,11 @@
       
       // Update game info
       document.getElementById('selected-game-title').textContent = game.title;
+      const authorElement = document.getElementById('selected-game-author');
+      if (authorElement) {
+        authorElement.textContent = `By ${game.author || 'Anonymous'}`;
+        authorElement.style.display = 'block';
+      }
       document.getElementById('selected-game-description').textContent = game.description;
       
       // Setup play new button
@@ -417,7 +412,7 @@
         }
         
         // Close menu
-        document.getElementById('slide-menu').classList.remove('open');
+        document.getElementById('slide-menu').classList.remove('active');
         
         // Only create new engine if it doesn't exist or game changed
         if (!engine || currentGame !== gamePath) {
@@ -426,9 +421,10 @@
           await engine.loadGame(gamePath);
         }
         
-        // Update nav title
+        // Update nav title to show current game
         const gameInfo = gamesList.games.find(g => g.folder === gamePath);
-        document.getElementById('current-game-title').textContent = gameInfo ? gameInfo.title : 'Playing Game';
+        const gameTitle = gameInfo ? gameInfo.title : 'Playing Game';
+        document.getElementById('current-page-title').innerHTML = `<span class="brand-gradient">Novellium</span> - ${gameTitle}`;
         
         showFeedback('Game loaded!');
       } catch (error) {
@@ -457,7 +453,7 @@
         if (startScreen) {
           startScreen.style.display = 'none';
         }
-        document.getElementById('slide-menu').classList.remove('open');
+        document.getElementById('slide-menu').classList.remove('active');
         
         // Create engine if needed or if different game
         if (!engine || currentGame !== saveData.gameFolder) {
@@ -472,9 +468,10 @@
         if (success) {
           showFeedback(`Loaded: ${saveName}`);
           
-          // Update nav title
+          // Update nav title to show current game
           const gameInfo = gamesList.games.find(g => g.folder === saveData.gameFolder);
-          document.getElementById('current-game-title').textContent = gameInfo ? gameInfo.title : 'Playing Game';
+          const gameTitle = gameInfo ? gameInfo.title : 'Playing Game';
+          document.getElementById('current-page-title').innerHTML = `<span class="brand-gradient">Novellium</span> - ${gameTitle}`;
         } else {
           showFeedback('Failed to load save', 'error');
           showStartScreen();
@@ -503,6 +500,9 @@
 
     // Show start screen
     function showStartScreen() {
+      // Restore original navbar title
+      document.getElementById('current-page-title').innerHTML = '<span class="brand-gradient">Novellium</span>';
+      
       document.getElementById('game-container').innerHTML = `
         <div id="start-screen" class="start-screen">
           <!-- Left sidebar with game list -->
@@ -552,7 +552,7 @@
                   </ul>
                 </div>
               </div>
-              
+
               <div class="cta-section">
                 <p class="cta-prompt">← Select a game to start playing</p>
                 <p class="cta-prompt">Or <a href="build.html" class="inline-link">create your own story</a> →</p>
@@ -563,6 +563,7 @@
             <div class="game-options-panel" id="game-options-panel" style="display: none;">
               <div class="game-options-header">
                 <h2 id="selected-game-title">Game Title</h2>
+                <p id="selected-game-author" style="color: #ffd700; font-size: 0.9em; margin: 5px 0 10px 0;">By Anonymous</p>
                 <p id="selected-game-description">Game description</p>
               </div>
               <div class="game-options-content">
@@ -580,34 +581,15 @@
         </div>
       `;
       
-      document.getElementById('current-game-title').textContent = 'Novellium';
+      document.getElementById('current-page-title').innerHTML = '<span class="brand-gradient">Novellium</span>';
       populateGamesCarousel();
       selectedGameOnStart = null;
       currentGame = null;
     }
 
-    // Navigation event handlers
-    document.getElementById('btn-home').onclick = () => showStartScreen();
-    
-    document.getElementById('btn-save').onclick = async () => {
-      if (engine && currentGame) {
-        const saveName = prompt('Save name:', `Save_${new Date().toLocaleDateString().replace(/\//g, '_')}`);
-        if (saveName) {
-          await engine.saveGame(saveName);
-          showFeedback(`Saved: ${saveName}`);
-        }
-      } else {
-        showFeedback('No game to save', 'error');
-      }
-    };
-
-    // Menu functionality
-    document.getElementById('btn-menu').onclick = () => {
-      document.getElementById('slide-menu').classList.toggle('open');
-    };
-
+    // Close menu handler
     document.getElementById('close-menu').onclick = () => {
-      document.getElementById('slide-menu').classList.remove('open');
+      document.getElementById('slide-menu').classList.remove('active');
     };
     
     // Settings functionality
@@ -757,7 +739,7 @@
       applyColors(colors);
       localStorage.setItem('vn_theme_colors', JSON.stringify(colors));
       showFeedback('Colors applied!');
-      document.getElementById('slide-menu').classList.remove('open');
+      document.getElementById('slide-menu').classList.remove('active');
     };
     
     // Reset colors button
@@ -852,7 +834,7 @@
       const menuBtn = document.getElementById('btn-menu');
       
       if (!menu.contains(event.target) && event.target !== menuBtn) {
-        menu.classList.remove('open');
+        menu.classList.remove('active');
       }
     });
 
@@ -887,7 +869,50 @@
     };
 
     // Initialize application
+    // Load navbar component
+    async function loadNavbar() {
+      try {
+        const response = await fetch('navbar.html');
+        const html = await response.text();
+        document.getElementById('navbar-container').innerHTML = html;
+        
+        // Update page title dynamically - keep the gradient span
+        const titleElement = document.getElementById('current-page-title');
+        if (titleElement) {
+          titleElement.innerHTML = '<span class="brand-gradient">Novellium</span>';
+          titleElement.onclick = () => showStartScreen();
+        }
+        
+        // Setup navigation handlers
+        const btnHome = document.getElementById('btn-home');
+        if (btnHome) {
+          btnHome.onclick = () => showStartScreen();
+        }
+        
+        const btnSave = document.getElementById('btn-save');
+        if (btnSave && engine && currentGame) {
+          btnSave.style.display = 'block';
+          btnSave.onclick = async () => {
+            if (engine && currentGame) {
+              await engine.quickSave();
+              showFeedback('Game saved!', 'success');
+            }
+          };
+        }
+        
+        const btnMenu = document.getElementById('btn-menu');
+        if (btnMenu) {
+          btnMenu.onclick = () => {
+            document.getElementById('slide-menu').classList.add('active');
+          };
+        }
+      } catch (error) {
+        console.error('Failed to load navbar:', error);
+      }
+    }
+
     async function initializeApp() {
+      await loadNavbar(); // Load navbar first
       await loadGamesList(); // Wait for games to load first
       loadColors(); // Load saved theme colors
       showStartScreen(); // Then show start screen with games

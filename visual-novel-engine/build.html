@@ -9,9 +9,16 @@
   <style>
     .builder-container {
       display: flex;
+      flex-direction: column;
       height: 100vh;
       background: linear-gradient(135deg, #1a1a2e, #16213e);
       color: white;
+    }
+    
+    .builder-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
     }
 
     .builder-sidebar {
@@ -360,11 +367,17 @@
 </head>
 <body>
   <div class="builder-container">
+    <!-- Navbar will be loaded here -->
+    <div id="navbar-container" style="position: sticky; top: 0; z-index: 1000;"></div>
+    
+    <!-- Builder Content (Sidebar + Main) -->
+    <div class="builder-content">
     <!-- Sidebar Navigation -->
     <div class="builder-sidebar">
       <h2 style="color: #ffd700; margin-top: 0;">🎮 Builder</h2>
       <ul class="builder-nav">
-        <li class="nav-item active" data-section="project">📁 Project Info</li>
+        <li class="nav-item active" data-section="howto">❓ How-To Guide</li>
+        <li class="nav-item" data-section="project">📁 Project Info</li>
         <li class="nav-item" data-section="characters">👤 Characters</li>
         <li class="nav-item" data-section="events">📖 Story Events</li>
         <li class="nav-item" data-section="assets">🖼️ Assets</li>
@@ -375,22 +388,18 @@
 
     <!-- Main Content Area -->
     <div style="flex: 1; display: flex; flex-direction: column;">
-      <!-- Top Bar -->
-      <div class="top-bar">
-        <h1>Visual Novel Builder</h1>
-        <div class="top-bar-actions">
-          <div class="mode-toggle">
-            <label>Form Mode</label>
-            <div class="mode-switch" id="mode-switch">
-              <div class="mode-switch-thumb"></div>
-            </div>
-            <label>JSON Editor</label>
+      <!-- Builder Toolbar -->
+      <div style="display: flex; justify-content: center; align-items: center; gap: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="mode-toggle">
+          <label>Form Mode</label>
+          <div class="mode-switch" id="mode-switch">
+            <div class="mode-switch-thumb"></div>
           </div>
-          <button class="btn btn-primary" id="btn-save-project">💾 Save Project</button>
-          <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 Back to Library</button>
+          <label>JSON Editor</label>
         </div>
+        <button class="btn btn-primary" id="btn-save-project">💾 Save Project</button>
       </div>
-
+      
       <div class="builder-main">
         <!-- JSON Editor Mode -->
         <div class="json-editor-container" id="json-editor-container">
@@ -410,8 +419,125 @@
 
         <!-- Form Mode (existing sections) -->
         <div id="form-mode-container">
+        <!-- How-To Guide Section -->
+        <div class="builder-section active" id="section-howto">
+          <div class="section-header">
+            <h2>❓ How-To Guide</h2>
+            <p>Learn how the Novellium engine works</p>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 10px; line-height: 1.8;">
+            <h3 style="color: #ffd700; margin-top: 0;">🎯 Engine Overview</h3>
+            <p>Novellium is an event-driven visual novel engine. Your story flows through <strong>Events</strong> that display text, show characters, play dialogue, and offer choices.</p>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">📖 Story Events</h3>
+            <p>Events are the core building blocks of your story. Each event has:</p>
+            <ul style="margin-left: 20px;">
+              <li><strong>ID</strong> - Unique identifier (e.g., "start", "chapter1", "ending_good")</li>
+              <li><strong>Type</strong> - Controls what the event does:
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                  <li><code>dialogue</code> - Display text with a speaking character</li>
+                  <li><code>narration</code> - Display text without a character (narrator voice)</li>
+                  <li><code>choice</code> - Present player with multiple options</li>
+                </ul>
+              </li>
+              <li><strong>Text</strong> - The dialogue or narration content</li>
+              <li><strong>Character</strong> - Which character is speaking (for dialogue events)</li>
+              <li><strong>Background</strong> - The scene background image</li>
+              <li><strong>Next Event</strong> - Which event plays after this one</li>
+            </ul>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">👤 Characters</h3>
+            <p>Characters represent people in your story. Each character needs:</p>
+            <ul style="margin-left: 20px;">
+              <li><strong>ID</strong> - Unique identifier (e.g., "alex", "narrator")</li>
+              <li><strong>Name</strong> - Display name shown in dialogue boxes</li>
+              <li><strong>Color</strong> - Hex color for their name/text (e.g., #ff6b6b)</li>
+              <li><strong>Sprites</strong> - Character images for different emotions:
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                  <li><code>default</code> - Normal expression (required)</li>
+                  <li><code>happy</code>, <code>sad</code>, <code>angry</code> - Optional emotions</li>
+                  <li>Use format: <code>characterId.emotion</code> in events (e.g., "alex.happy")</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">🔀 Branching & Choices</h3>
+            <p>Create interactive stories with choice events:</p>
+            <ul style="margin-left: 20px;">
+              <li>Set event type to <code>choice</code></li>
+              <li>Add 2+ choices with text and next event ID</li>
+              <li>Each choice can lead to different story paths</li>
+              <li>Track player decisions in variables for later use</li>
+            </ul>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">🖼️ Assets</h3>
+            <p>Upload images to use in your game:</p>
+            <ul style="margin-left: 20px;">
+              <li><strong>Backgrounds</strong> - Scene images (e.g., "classroom.jpg")</li>
+              <li><strong>Sprites</strong> - Character images (e.g., "alex_happy.png")</li>
+              <li>Supported: PNG, JPG, GIF, WebP</li>
+              <li>Assets are stored in IndexedDB (unlimited storage)</li>
+              <li>Reference assets by filename in events</li>
+            </ul>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">💾 Variables & Conditions</h3>
+            <p>Store game state and create conditional logic:</p>
+            <ul style="margin-left: 20px;">
+              <li>Use <code>setVariable</code> action to save values</li>
+              <li>Check variables with conditions: <code>variable:score > 10</code></li>
+              <li>Common patterns:
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                  <li>Relationship points: <code>variable:alex_love += 1</code></li>
+                  <li>Story flags: <code>variable:found_key = true</code></li>
+                  <li>Branching: Check conditions to show different events</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">📦 Export & Deploy</h3>
+            <p>When your game is ready:</p>
+            <ol style="margin-left: 20px;">
+              <li>Click <strong>Export/Build</strong> to download your game as a ZIP</li>
+              <li>ZIP contains: game.json (data) + all uploaded assets</li>
+              <li>Use <strong>Import & Deploy</strong> to test in the Novellium Library</li>
+              <li>Share your ZIP file with players or host on your website</li>
+            </ol>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">🚀 Quick Start Workflow</h3>
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; border-left: 4px solid #ffd700; margin-top: 15px;">
+              <ol style="margin: 0; padding-left: 20px;">
+                <li>Fill out <strong>Project Info</strong> (title, ID, author)</li>
+                <li>Create characters in <strong>Characters</strong> section</li>
+                <li>Upload backgrounds/sprites in <strong>Assets</strong></li>
+                <li>Build your story in <strong>Story Events</strong>:
+                  <ul style="margin-top: 10px;">
+                    <li>Start with event ID "start" (or your initial event)</li>
+                    <li>Add dialogue events with characters</li>
+                    <li>Link events together with "next" property</li>
+                    <li>Add choice events for branching paths</li>
+                  </ul>
+                </li>
+                <li>Save your project regularly</li>
+                <li>Export and deploy to test in Library</li>
+              </ol>
+            </div>
+
+            <h3 style="color: #ffd700; margin-top: 30px;">💡 Tips & Best Practices</h3>
+            <ul style="margin-left: 20px;">
+              <li>Use descriptive event IDs: "chapter1_intro" instead of "event1"</li>
+              <li>Keep choice text short (1-2 lines max)</li>
+              <li>Test your game frequently during development</li>
+              <li>Use consistent naming for character sprites</li>
+              <li>Add a "narrator" character for narration events</li>
+              <li>Plan your story flow on paper before building</li>
+              <li>Use variables to track important player choices</li>
+            </ul>
+          </div>
+        </div>
+
         <!-- Project Info Section -->
-        <div class="builder-section active" id="section-project">
+        <div class="builder-section" id="section-project">
           <div class="section-header">
             <h2>📁 Project Information</h2>
             <p>Set up your visual novel's basic information</p>
@@ -755,7 +881,7 @@
     let editingEventIndex = -1;
     let currentJsonTab = 'project';
     let isJsonMode = false;
-    let currentSection = 'project';
+    let currentSection = 'howto';
 
     // Save project info
     function saveProjectInfo() {
@@ -1937,8 +2063,55 @@
     });
 
     // Initialize
+    // Load navbar component
+    async function loadNavbar() {
+      try {
+        const response = await fetch('navbar.html');
+        const html = await response.text();
+        document.getElementById('navbar-container').innerHTML = html;
+        
+        // Update page title - keep the gradient span
+        const titleElement = document.getElementById('current-page-title');
+        if (titleElement) {
+          titleElement.innerHTML = '<span class="brand-gradient">Novellium</span> Builder';
+        }
+        
+        // Hide save button on builder page
+        const btnSave = document.getElementById('btn-save');
+        if (btnSave) {
+          btnSave.style.display = 'none';
+        }
+        
+        // Setup builder-specific navigation - highlight builder button
+        const btnBuilder = document.getElementById('btn-builder');
+        if (btnBuilder) {
+          btnBuilder.classList.add('primary');
+        }
+        
+        const btnHome = document.getElementById('btn-home');
+        if (btnHome) {
+          btnHome.classList.remove('primary');
+        }
+
+        // Setup settings panel functionality
+        const btnMenu = document.getElementById('btn-menu');
+        if (btnMenu) {
+          btnMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const menu = document.getElementById('slide-menu');
+            if (menu) {
+              menu.classList.add('active');
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load navbar:', error);
+      }
+    }
+
     async function initialize() {
       console.log('Initializing builder...');
+      await loadNavbar(); // Load navbar first
       await waitForJSZip();
       console.log('JSZip loaded');
       setupEventListeners();
@@ -1961,6 +2134,185 @@
     }
 
     initialize();
+  </script>
+  </div> <!-- Close builder-content -->
+  </div> <!-- Close builder-container -->
+
+  <!-- Settings Panel -->
+  <div id="slide-menu" class="slide-menu">
+    <div class="slide-menu-header">
+      <h3>⚙️ Settings</h3>
+      <button class="close-btn" onclick="closeSettings()">×</button>
+    </div>
+    <div class="slide-menu-content">
+      <div class="settings-section">
+        <h4>🎨 Display</h4>
+        <div class="setting-item">
+          <label>Text Speed</label>
+          <input type="range" id="text-speed" min="1" max="10" value="5">
+          <span id="text-speed-value">5</span>
+        </div>
+        <div class="setting-item">
+          <label>Auto-Play Speed</label>
+          <input type="range" id="auto-speed" min="1" max="10" value="3">
+          <span id="auto-speed-value">3</span>
+        </div>
+        <div class="setting-item">
+          <label>Fullscreen Mode</label>
+          <button class="btn btn-secondary" onclick="toggleFullscreen()">Toggle Fullscreen</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>🔊 Audio</h4>
+        <div class="setting-item">
+          <label>Master Volume</label>
+          <input type="range" id="master-volume" min="0" max="100" value="70">
+          <span id="master-volume-value">70%</span>
+        </div>
+        <div class="setting-item">
+          <label>Music Volume</label>
+          <input type="range" id="music-volume" min="0" max="100" value="60">
+          <span id="music-volume-value">60%</span>
+        </div>
+        <div class="setting-item">
+          <label>Sound Effects</label>
+          <input type="range" id="sfx-volume" min="0" max="100" value="80">
+          <span id="sfx-volume-value">80%</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>💾 Data Management</h4>
+        <div class="setting-item">
+          <button class="btn btn-secondary" onclick="exportSettings()">📤 Export Settings</button>
+          <button class="btn btn-secondary" onclick="importSettings()">📥 Import Settings</button>
+        </div>
+        <div class="setting-item">
+          <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+          <p class="setting-hint">⚠️ This will delete all saves and settings</p>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>ℹ️ About</h4>
+        <p class="about-text">
+          <strong>Novellium Builder</strong><br>
+          Visual Novel Creation Tool<br>
+          Version 1.0.0
+        </p>
+        <div class="setting-item">
+          <button class="btn btn-secondary" onclick="window.open('https://github.com/novellium', '_blank')">📖 Documentation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Settings panel functions
+    function closeSettings() {
+      document.getElementById('slide-menu').classList.remove('active');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function exportSettings() {
+      const settings = {
+        textSpeed: document.getElementById('text-speed').value,
+        autoSpeed: document.getElementById('auto-speed').value,
+        masterVolume: document.getElementById('master-volume').value,
+        musicVolume: document.getElementById('music-volume').value,
+        sfxVolume: document.getElementById('sfx-volume').value,
+        exportedAt: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'novellium-settings.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importSettings() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const settings = JSON.parse(e.target.result);
+              if (settings.textSpeed) document.getElementById('text-speed').value = settings.textSpeed;
+              if (settings.autoSpeed) document.getElementById('auto-speed').value = settings.autoSpeed;
+              if (settings.masterVolume) document.getElementById('master-volume').value = settings.masterVolume;
+              if (settings.musicVolume) document.getElementById('music-volume').value = settings.musicVolume;
+              if (settings.sfxVolume) document.getElementById('sfx-volume').value = settings.sfxVolume;
+              updateSettingsValues();
+              alert('Settings imported successfully!');
+            } catch (error) {
+              alert('Error importing settings: ' + error.message);
+            }
+          };
+          reader.readAsText(file);
+        }
+      };
+      input.click();
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ This will permanently delete all builder data, saves, and settings. Are you sure?')) {
+        if (confirm('This action cannot be undone. Continue?')) {
+          localStorage.clear();
+          // Clear IndexedDB
+          const deleteReq = indexedDB.deleteDatabase('VNBuilderAssets');
+          deleteReq.onsuccess = () => {
+            alert('All data cleared. Page will reload.');
+            window.location.reload();
+          };
+        }
+      }
+    }
+
+    function updateSettingsValues() {
+      document.getElementById('text-speed-value').textContent = document.getElementById('text-speed').value;
+      document.getElementById('auto-speed-value').textContent = document.getElementById('auto-speed').value;
+      document.getElementById('master-volume-value').textContent = document.getElementById('master-volume').value + '%';
+      document.getElementById('music-volume-value').textContent = document.getElementById('music-volume').value + '%';
+      document.getElementById('sfx-volume-value').textContent = document.getElementById('sfx-volume').value + '%';
+    }
+
+    // Settings range inputs event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      updateSettingsValues();
+      
+      document.getElementById('text-speed').addEventListener('input', updateSettingsValues);
+      document.getElementById('auto-speed').addEventListener('input', updateSettingsValues);
+      document.getElementById('master-volume').addEventListener('input', updateSettingsValues);
+      document.getElementById('music-volume').addEventListener('input', updateSettingsValues);
+      document.getElementById('sfx-volume').addEventListener('input', updateSettingsValues);
+    });
+
+    // Close settings when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('slide-menu');
+      const menuBtn = document.getElementById('btn-menu');
+      
+      if (menu && menuBtn && !menu.contains(e.target) && !menuBtn.contains(e.target)) {
+        menu.classList.remove('active');
+      }
+    });
   </script>
 </body>
 </html>

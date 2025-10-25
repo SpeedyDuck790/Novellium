@@ -4,6 +4,7 @@
       "id": "dating-game",
       "title": "Love Quest",
       "description": "A romantic story about asking someone special out on a date. Can you win her heart?",
+      "author": "James Hill",
       "thumbnail": "gamefolder/dating-game/backgrounds/school_hallway.jpg",
       "folder": "gamefolder/dating-game"
     },
@@ -11,6 +12,7 @@
       "id": "adventure-game", 
       "title": "Mystery Adventure",
       "description": "An epic adventure showcasing all engine features: multiple characters, branching paths, and different scene types.",
+      "author": "ChatGPT",
       "thumbnail": "gamefolder/adventure-game/backgrounds/forest_path.jpg",
       "folder": "gamefolder/adventure-game"
     }

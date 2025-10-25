@@ -112,32 +112,58 @@ body {
   flex-direction: column;
 }
 
-/* Navigation bar */
+/* Navigation bar (slim, centered) */
 .navbar {
-  background: rgba(42, 42, 42, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 15px 25px;
+  background: rgba(42, 42, 42, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px; /* thinner */
   display: flex;
+  justify-content: center; /* center contents */
+  align-items: center;
   gap: 10px;
-  border-bottom: 2px solid #444;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  height: 48px;
   z-index: 1000;
 }
 
-.navbar button {
-  padding: 10px 18px;
-  background: #4a4a4a;
+.navbar > div {
+  display: flex;
+  align-items: center;
+  gap: 26px; /* spacing between logo and buttons */
+}
+
+.nav-btn {
+  padding: 8px 14px;
+  background: rgba(74, 74, 74, 0.6);
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.18s ease;
 }
 
-.navbar button:hover {
-  background: #5a5a5a;
+.nav-btn:hover {
+  background: rgba(90, 90, 90, 0.7);
   transform: translateY(-1px);
+}
+
+/* Primary nav button (highlight) */
+.nav-btn.primary {
+  background: linear-gradient(135deg, var(--button-color, #ffd700), var(--button-hover-color, #ffed4e));
+  color: #111;
+  box-shadow: 0 6px 18px rgba(255, 215, 0, 0.18);
+}
+
+/* Brand gradient - ensure it overrides other text color rules */
+.brand-gradient {
+  background: linear-gradient(135deg, #ffd700, #ff6b6b, #00d4ff) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: gradientShift 5s ease infinite;
+  background-size: 200% 200%;
 }
 
 /* Slide-out menu (Settings - Right side) */
@@ -158,7 +184,8 @@ body {
   flex-direction: column;
 }
 
-#slide-menu.open {
+#slide-menu.open,
+#slide-menu.active {
   right: 0;
 }
 

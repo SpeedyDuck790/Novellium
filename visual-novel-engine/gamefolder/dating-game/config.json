@@ -1,5 +1,6 @@
 {
   "name": "Love Quest",
+  "author": "James Hill",
   "version": "1.0.0",
   "startEvent": "intro",
   "characters": "characters.json",

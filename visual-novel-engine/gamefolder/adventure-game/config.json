@@ -1,6 +1,7 @@
 {
   "name": "Mystery Adventure",
-  "version": "1.0.0", 
+  "author": "ChatGPT",
+  "version": "1.0.0",
   "startEvent": "forest_start",
   "characters": "characters.json",
   "story": "story.json"
