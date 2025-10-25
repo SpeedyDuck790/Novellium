@@ -89,29 +89,51 @@
     
     <div id="game-container" class="game-container">
       <div id="start-screen" class="start-screen">
-        <div class="welcome-section">
-          <h1>Visual Novel Engine</h1>
-          <p>Select a game to play or load a save</p>
-        </div>
-        
-        <!-- Horizontal game cards -->
-        <div class="games-carousel" id="games-carousel">
-          <!-- Games will be populated here -->
-        </div>
-        
-        <!-- Expandable saves panel -->
-        <div class="saves-panel" id="saves-panel" style="display: none;">
-          <div class="saves-panel-header">
-            <h3 id="saves-panel-title">Select a game above</h3>
-            <button id="close-saves-panel" class="close-panel-btn">✕</button>
+        <!-- Left sidebar with game list -->
+        <div class="games-sidebar" id="games-sidebar">
+          <div class="sidebar-header">
+            <h2>📚 Games Library</h2>
           </div>
-          <div class="saves-panel-content">
-            <button id="btn-play-new" class="play-new-btn">▶ Start New Game</button>
-            <div class="saves-divider">
-              <span>or load a save</span>
+          <div class="games-list-vertical" id="games-list-vertical">
+            <!-- Games will be populated here -->
+          </div>
+        </div>
+        
+        <!-- Right content area -->
+        <div class="content-area" id="content-area">
+          <!-- Default welcome content -->
+          <div class="welcome-content" id="welcome-content">
+            <h1>Welcome to Visual Novel Engine</h1>
+            <div class="welcome-text">
+              <p>🎮 A modern, customizable visual novel engine built with vanilla JavaScript</p>
+              <h3>Features:</h3>
+              <ul>
+                <li>📖 Rich storytelling with branching narratives</li>
+                <li>💾 Multiple save slots per game</li>
+                <li>🎨 Customizable UI themes and colors</li>
+                <li>🖼️ Support for backgrounds, characters, and sprites</li>
+                <li>⚙️ Easy-to-use configuration system</li>
+                <li>🎭 Character-based dialogue system</li>
+              </ul>
+              <p class="select-prompt">← Select a game from the library to get started</p>
             </div>
-            <div id="start-saves-list" class="start-saves-list">
-              <p class="no-saves">No saves available</p>
+          </div>
+          
+          <!-- Game options panel (shown when game selected) -->
+          <div class="game-options-panel" id="game-options-panel" style="display: none;">
+            <div class="game-options-header">
+              <h2 id="selected-game-title">Game Title</h2>
+              <p id="selected-game-description">Game description</p>
+            </div>
+            <div class="game-options-content">
+              <button id="btn-play-new" class="game-action-btn new-game">▶ Start New Game</button>
+              
+              <div class="saves-section">
+                <h3>💾 Load Saved Game</h3>
+                <div id="start-saves-list" class="saves-list-vertical">
+                  <p class="no-saves">No saves available for this game</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -144,58 +166,75 @@
       try {
         const response = await fetch('./games-list.json');
         gamesList = await response.json();
+        console.log('Games list loaded:', gamesList);
         populateGamesCarousel();
-        populateMenuGames();
       } catch (error) {
         console.error('Failed to load games list:', error);
         showFeedback('Failed to load games list', 'error');
       }
     }
 
-    // Populate games carousel on start screen
+    // Populate games in vertical sidebar
     let selectedGameOnStart = null;
     
     function populateGamesCarousel() {
-      const gamesCarousel = document.getElementById('games-carousel');
-      gamesCarousel.innerHTML = '';
+      const gamesListVertical = document.getElementById('games-list-vertical');
+      
+      if (!gamesListVertical) {
+        console.error('games-list-vertical element not found');
+        return;
+      }
+      
+      if (!gamesList || !gamesList.games) {
+        console.error('No games in gamesList:', gamesList);
+        return;
+      }
+      
+      gamesListVertical.innerHTML = '';
+      
+      console.log('Populating', gamesList.games.length, 'games');
       
       gamesList.games.forEach(game => {
         const gameCard = document.createElement('div');
-        gameCard.className = 'carousel-game-card';
+        gameCard.className = 'vertical-game-card';
         gameCard.dataset.gameFolder = game.folder;
         gameCard.innerHTML = `
-          <div class="carousel-game-thumbnail">
-            <img src="${game.thumbnail}" alt="${game.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22120%22%3E%3Crect fill=%22%23333%22 width=%22200%22 height=%22120%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+          <div class="vertical-game-thumbnail">
+            <img src="${game.thumbnail}" alt="${game.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2260%22%3E%3Crect fill=%22%23333%22 width=%22100%22 height=%2260%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2210%22%3ENo Image%3C/text%3E%3C/svg%3E'">
           </div>
-          <div class="carousel-game-info">
+          <div class="vertical-game-info">
             <h3>${game.title}</h3>
             <p>${game.description}</p>
           </div>
         `;
         
-        // Click card to expand saves
+        // Click card to show game options
         gameCard.addEventListener('click', () => {
           selectGameOnStart(game);
         });
         
-        gamesCarousel.appendChild(gameCard);
+        gamesListVertical.appendChild(gameCard);
       });
     }
 
-    // Select a game on start screen to show saves
+    // Select a game on start screen to show options
     function selectGameOnStart(game) {
       selectedGameOnStart = game;
       
       // Update card selection
-      document.querySelectorAll('.carousel-game-card').forEach(card => {
+      document.querySelectorAll('.vertical-game-card').forEach(card => {
         card.classList.remove('selected');
       });
       document.querySelector(`[data-game-folder="${game.folder}"]`).classList.add('selected');
       
-      // Show saves panel
-      const savesPanel = document.getElementById('saves-panel');
-      savesPanel.style.display = 'block';
-      document.getElementById('saves-panel-title').textContent = game.title;
+      // Hide welcome content, show game options
+      document.getElementById('welcome-content').style.display = 'none';
+      const optionsPanel = document.getElementById('game-options-panel');
+      optionsPanel.style.display = 'block';
+      
+      // Update game info
+      document.getElementById('selected-game-title').textContent = game.title;
+      document.getElementById('selected-game-description').textContent = game.description;
       
       // Setup play new button
       document.getElementById('btn-play-new').onclick = () => {
@@ -254,7 +293,8 @@
       }
     };
 
-    // Close saves panel
+    // OLD - Close saves panel (not used with new vertical layout)
+    /*
     document.getElementById('close-saves-panel').onclick = () => {
       document.getElementById('saves-panel').style.display = 'none';
       document.querySelectorAll('.carousel-game-card').forEach(card => {
@@ -262,10 +302,13 @@
       });
       selectedGameOnStart = null;
     };
+    */
 
     // Populate menu games bar with cards
     let selectedGameForSaves = null;
     
+    // OLD FUNCTION - Not used with new vertical layout
+    /*
     function populateMenuGames() {
       const menuGamesBar = document.getElementById('menu-games-bar');
       menuGamesBar.innerHTML = '';
@@ -294,8 +337,11 @@
         menuGamesBar.appendChild(card);
       });
     }
+    */
 
     // Select a game to view its saves
+    // OLD FUNCTIONS - Not used with new vertical layout
+    /*
     function selectGameForSaves(game) {
       selectedGameForSaves = game;
       
@@ -348,6 +394,7 @@
         menuSavesList.appendChild(item);
       });
     }
+    */
 
     // Load a specific game
     window.loadGame = async function(gamePath) {
@@ -449,29 +496,51 @@
     function showStartScreen() {
       document.getElementById('game-container').innerHTML = `
         <div id="start-screen" class="start-screen">
-          <div class="welcome-section">
-            <h1>Visual Novel Engine</h1>
-            <p>Select a game to play or load a save</p>
-          </div>
-          
-          <!-- Horizontal game cards -->
-          <div class="games-carousel" id="games-carousel">
-            <!-- Games will be populated here -->
-          </div>
-          
-          <!-- Expandable saves panel -->
-          <div class="saves-panel" id="saves-panel" style="display: none;">
-            <div class="saves-panel-header">
-              <h3 id="saves-panel-title">Select a game above</h3>
-              <button id="close-saves-panel" class="close-panel-btn">✕</button>
+          <!-- Left sidebar with game list -->
+          <div class="games-sidebar" id="games-sidebar">
+            <div class="sidebar-header">
+              <h2>📚 Games Library</h2>
             </div>
-            <div class="saves-panel-content">
-              <button id="btn-play-new" class="play-new-btn">▶ Start New Game</button>
-              <div class="saves-divider">
-                <span>or load a save</span>
+            <div class="games-list-vertical" id="games-list-vertical">
+              <!-- Games will be populated here -->
+            </div>
+          </div>
+          
+          <!-- Right content area -->
+          <div class="content-area" id="content-area">
+            <!-- Default welcome content -->
+            <div class="welcome-content" id="welcome-content">
+              <h1>Welcome to Visual Novel Engine</h1>
+              <div class="welcome-text">
+                <p>🎮 A modern, customizable visual novel engine built with vanilla JavaScript</p>
+                <h3>Features:</h3>
+                <ul>
+                  <li>📖 Rich storytelling with branching narratives</li>
+                  <li>💾 Multiple save slots per game</li>
+                  <li>🎨 Customizable UI themes and colors</li>
+                  <li>🖼️ Support for backgrounds, characters, and sprites</li>
+                  <li>⚙️ Easy-to-use configuration system</li>
+                  <li>🎭 Character-based dialogue system</li>
+                </ul>
+                <p class="select-prompt">← Select a game from the library to get started</p>
               </div>
-              <div id="start-saves-list" class="start-saves-list">
-                <p class="no-saves">No saves available</p>
+            </div>
+            
+            <!-- Game options panel (shown when game selected) -->
+            <div class="game-options-panel" id="game-options-panel" style="display: none;">
+              <div class="game-options-header">
+                <h2 id="selected-game-title">Game Title</h2>
+                <p id="selected-game-description">Game description</p>
+              </div>
+              <div class="game-options-content">
+                <button id="btn-play-new" class="game-action-btn new-game">▶ Start New Game</button>
+                
+                <div class="saves-section">
+                  <h3>💾 Load Saved Game</h3>
+                  <div id="start-saves-list" class="saves-list-vertical">
+                    <p class="no-saves">No saves available for this game</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -480,16 +549,7 @@
       
       document.getElementById('current-game-title').textContent = 'Visual Novel Engine';
       populateGamesCarousel();
-      
-      // Re-attach close button listener
-      document.getElementById('close-saves-panel').onclick = () => {
-        document.getElementById('saves-panel').style.display = 'none';
-        document.querySelectorAll('.carousel-game-card').forEach(card => {
-          card.classList.remove('selected');
-        });
-        selectedGameOnStart = null;
-      };
-      
+      selectedGameOnStart = null;
       currentGame = null;
     }
 
