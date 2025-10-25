@@ -163,6 +163,26 @@
       background: rgba(255, 107, 107, 0.4);
     }
 
+    /* Mode selection buttons */
+    .import-mode-btn, .deploy-mode-btn {
+      transition: all 0.3s ease;
+      text-align: center;
+      position: relative;
+    }
+
+    .import-mode-btn.selected, .deploy-mode-btn.selected {
+      background: linear-gradient(135deg, #ffd700, #ffed4e) !important;
+      color: #1a1a2e !important;
+      border-color: #ffd700 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .import-mode-btn:hover, .deploy-mode-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(255, 255, 255, 0.1);
+    }
+
     .section-header {
       margin-bottom: 30px;
       padding-bottom: 15px;
@@ -811,7 +831,7 @@
         <div class="builder-section" id="section-import">
           <div class="section-header">
             <h2>📥 Import & Deploy to Library</h2>
-            <p>Upload a game package and deploy it to Novellium</p>
+            <p>Upload a game package and choose where to deploy it</p>
           </div>
 
           <div class="event-builder">
@@ -824,8 +844,23 @@
               <p class="form-hint">Choose a game package created with "Export Complete Package"</p>
             </div>
 
-            <button class="btn btn-primary" id="btn-import-and-deploy" style="display: block; width: 100%; background: linear-gradient(135deg, #00d4ff, #0099ff);">
-              🚀 Import & Deploy to Library
+            <div class="form-group">
+              <label>Import Mode</label>
+              <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-secondary import-mode-btn" id="btn-mode-local" data-mode="local" style="flex: 1;">
+                  💻 Local Import
+                  <br><small style="opacity: 0.8;">Save to local library only</small>
+                </button>
+                <button class="btn btn-secondary import-mode-btn" id="btn-mode-cloud" data-mode="cloud" style="flex: 1;">
+                  🌊 Cloud Import
+                  <br><small style="opacity: 0.8;">Upload to public cloud library</small>
+                </button>
+              </div>
+              <p class="form-hint" id="mode-description">Choose how to import your game</p>
+            </div>
+
+            <button class="btn btn-primary" id="btn-import-and-deploy" style="display: block; width: 100%; background: linear-gradient(135deg, #00d4ff, #0099ff);" disabled>
+              🚀 Import Game
             </button>
 
             <div id="import-status" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;">
@@ -839,7 +874,21 @@
             <h3 style="color: #ffd700;">Deploy Current Project</h3>
             <p style="color: #ccc;">Deploy the game you're currently working on (from Project Info, Characters, Events, Assets tabs)</p>
             
-            <button class="btn btn-primary" id="btn-deploy-current" style="display: block; width: 100%; background: linear-gradient(135deg, #ffd700, #ffed4e); color: #1a1a2e;">
+            <div class="form-group">
+              <label>Deploy Mode</label>
+              <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-secondary deploy-mode-btn" id="btn-deploy-local" data-mode="local" style="flex: 1;">
+                  💻 Local Deploy
+                  <br><small style="opacity: 0.8;">Save to local library</small>
+                </button>
+                <button class="btn btn-secondary deploy-mode-btn" id="btn-deploy-cloud" data-mode="cloud" style="flex: 1;">
+                  🌊 Cloud Deploy
+                  <br><small style="opacity: 0.8;">Upload to public cloud</small>
+                </button>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" id="btn-deploy-current" style="display: block; width: 100%; background: linear-gradient(135deg, #ffd700, #ffed4e); color: #1a1a2e;" disabled>
               🚀 Deploy Current Project
             </button>
 
@@ -854,6 +903,18 @@
   </div>
 
   <script type="module">
+    // Import Supabase for cloud functionality
+    import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+    
+    // Initialize Supabase client
+    const supabaseUrl = 'https://ynxrocumivaenpoyxskf.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlueHJvY3VtaXZhZW5wb3l4c2tmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MDM3ODQsImV4cCI6MjA3Njk3OTc4NH0.kK8yinWZyfmhsY5P7hyh3UKl1WKUAo6IW4bvS-4hO4o';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Global variables for mode selection
+    let selectedImportMode = null;
+    let selectedDeployMode = null;
+
     // Wait for JSZip to load
     function waitForJSZip() {
       return new Promise((resolve) => {
@@ -888,6 +949,55 @@
     let currentJsonTab = 'project';
     let isJsonMode = false;
     let currentSection = 'howto';
+
+    // Mode selection functionality
+    function initializeModeSelection() {
+      // Import mode buttons
+      document.querySelectorAll('.import-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.import-mode-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedImportMode = btn.dataset.mode;
+          
+          const importBtn = document.getElementById('btn-import-and-deploy');
+          const description = document.getElementById('mode-description');
+          
+          if (selectedImportMode === 'local') {
+            importBtn.textContent = '💻 Import to Local Library';
+            description.textContent = 'Game will be saved locally and available only on this device';
+          } else if (selectedImportMode === 'cloud') {
+            importBtn.textContent = '🌊 Import to Cloud Library';
+            description.textContent = 'Game will be uploaded to the public cloud and available to everyone';
+          }
+          
+          importBtn.disabled = false;
+        });
+      });
+
+      // Deploy mode buttons
+      document.querySelectorAll('.deploy-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.deploy-mode-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedDeployMode = btn.dataset.mode;
+          
+          const deployBtn = document.getElementById('btn-deploy-current');
+          
+          if (selectedDeployMode === 'local') {
+            deployBtn.textContent = '💻 Deploy to Local Library';
+          } else if (selectedDeployMode === 'cloud') {
+            deployBtn.textContent = '🌊 Deploy to Cloud Library';
+          }
+          
+          deployBtn.disabled = false;
+        });
+      });
+    }
+
+    // Initialize mode selection when page loads
+    waitForJSZip().then(() => {
+      initializeModeSelection();
+    });
 
     // Save project info
     function saveProjectInfo() {
@@ -1518,13 +1628,27 @@
       alert('Complete game package downloaded as ZIP!');
     });
 
-    // Deploy game to engine
+    // Deploy game to engine with mode selection
     document.getElementById('btn-deploy-current').addEventListener('click', async () => {
-      await deployGameToEngine(projectData, 'deploy-status');
+      if (!selectedDeployMode) {
+        alert('Please select a deploy mode first (Local or Cloud)');
+        return;
+      }
+      
+      if (selectedDeployMode === 'local') {
+        await deployGameToEngine(projectData, 'deploy-status');
+      } else if (selectedDeployMode === 'cloud') {
+        await deployCurrentToCloud();
+      }
     });
 
-    // Import and deploy ZIP file
+    // Import and deploy ZIP file with mode selection
     document.getElementById('btn-import-and-deploy').addEventListener('click', async () => {
+      if (!selectedImportMode) {
+        alert('Please select an import mode first (Local or Cloud)');
+        return;
+      }
+
       const fileInput = document.getElementById('import-zip-file');
       const statusDiv = document.getElementById('import-status');
       
@@ -1598,12 +1722,10 @@
           }
         }
 
-        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Validating game data...</p>';
-
         // Generate game ID from title if not present
         const gameId = config.gameId || config.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-        // Create project data structure for validation
+        // Create project data structure
         const importedProject = {
           info: {
             title: config.title,
@@ -1624,12 +1746,16 @@
           }))
         };
 
-        // Store assets temporarily
-        window.importedAssets = assets;
-        window.importedGameId = gameId;
-
-        // Deploy the imported game
-        await deployGameToEngine(importedProject, 'import-status', assets, gameId);
+        if (selectedImportMode === 'local') {
+          // Local import - existing functionality
+          statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Deploying to local library...</p>';
+          window.importedAssets = assets;
+          window.importedGameId = gameId;
+          await deployGameToEngine(importedProject, 'import-status', assets, gameId);
+        } else if (selectedImportMode === 'cloud') {
+          // Cloud import - upload assets and game data to Supabase
+          await importToCloud(importedProject, assets, statusDiv);
+        }
 
         // Clear file input
         fileInput.value = '';
@@ -1644,6 +1770,239 @@
         `;
       }
     });
+
+    // Deploy current project to cloud
+    async function deployCurrentToCloud() {
+      const statusDiv = document.getElementById('deploy-status');
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = 'rgba(255, 165, 0, 0.2)';
+      statusDiv.style.borderLeft = '4px solid #ffa500';
+      statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Preparing current project for cloud...</p>';
+      
+      try {
+        // Validation
+        if (!projectData.info.title || !projectData.info.author) {
+          throw new Error('Please fill in at least the game title and author');
+        }
+        
+        if (projectData.characters.length === 0) {
+          throw new Error('Please add at least one character');
+        }
+        
+        if (projectData.events.length === 0) {
+          throw new Error('Please add at least one event');
+        }
+        
+        const gameId = projectData.info.id || projectData.info.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Converting project data...</p>';
+        
+        // Convert project structure to database format
+        const charactersObj = {};
+        projectData.characters.forEach(char => {
+          charactersObj[char.id] = {
+            name: char.name,
+            color: char.color,
+            sprites: char.sprites || []
+          };
+        });
+        
+        const eventsObj = {};
+        projectData.events.forEach(event => {
+          eventsObj[event.id] = { ...event };
+          delete eventsObj[event.id].id;
+        });
+        
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Uploading to cloud database...</p>';
+        
+        // Upload game to Supabase database
+        const gameData = {
+          title: projectData.info.title,
+          author: projectData.info.author,
+          description: projectData.info.description || '',
+          game_id: gameId,
+          config: {
+            title: projectData.info.title,
+            author: projectData.info.author,
+            initialEvent: projectData.info.initialEvent
+          },
+          characters: charactersObj,
+          events: eventsObj,
+          is_public: true
+        };
+        
+        const { data, error } = await supabase
+          .from('games')
+          .insert([gameData])
+          .select()
+          .single();
+        
+        if (error) {
+          if (error.code === '23505') {
+            throw new Error(`Game with ID "${gameId}" already exists. Please choose a different title or modify the game ID.`);
+          }
+          throw new Error(`Database error: ${error.message}`);
+        }
+        
+        statusDiv.style.background = 'rgba(34, 197, 94, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #22c55e';
+        statusDiv.innerHTML = `
+          <h4 style="color: #22c55e; margin: 0 0 10px 0;">✅ Cloud Deploy Successful!</h4>
+          <p style="color: #22c55e; margin: 0 0 5px 0;">Game "${projectData.info.title}" deployed to cloud</p>
+          <p style="color: #ccc; margin: 0; font-size: 12px;">Game ID: ${gameId}</p>
+          <p style="color: #ccc; margin: 5px 0 0 0; font-size: 12px;">Your game is now publicly available in the cloud library! 🌊</p>
+          <p style="color: #ffa500; margin: 10px 0 0 0; font-size: 12px;">Note: Assets (images/audio) need to be uploaded separately via import for full cloud compatibility</p>
+        `;
+        
+      } catch (error) {
+        console.error('Cloud deploy error:', error);
+        statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #ff6b6b';
+        statusDiv.innerHTML = `
+          <h4 style="color: #ff6b6b; margin: 0 0 10px 0;">❌ Cloud Deploy Failed</h4>
+          <p style="color: #ff6b6b; margin: 0;">${error.message}</p>
+        `;
+      }
+    }
+
+    // Cloud import functionality
+    async function importToCloud(project, assets, statusDiv) {
+      statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Uploading assets to cloud storage...</p>';
+      
+      const gameId = project.info.id;
+      const uploadedAssetUrls = {};
+      
+      try {
+        // Upload each asset to Supabase Storage
+        let uploadedCount = 0;
+        const totalAssets = Object.keys(assets).length;
+        
+        for (const [filename, dataUrl] of Object.entries(assets)) {
+          statusDiv.innerHTML = `<p style="color: #ffa500; margin: 0;">⏳ Uploading ${filename} (${uploadedCount + 1}/${totalAssets})...</p>`;
+          
+          // Convert data URL to file
+          const response = await fetch(dataUrl);
+          const blob = await response.blob();
+          const file = new File([blob], filename);
+          
+          // Upload to Supabase Storage
+          const filePath = `${gameId}/${filename}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('game-assets')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+          
+          if (uploadError) throw new Error(`Failed to upload ${filename}: ${uploadError.message}`);
+          
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('game-assets')
+            .getPublicUrl(filePath);
+          
+          uploadedAssetUrls[filename] = urlData.publicUrl;
+          uploadedCount++;
+        }
+        
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Updating asset references...</p>';
+        
+        // Update asset paths in game data to use cloud URLs
+        const updatedCharacters = { ...project.info.characters };
+        const updatedEvents = { ...project.info.events };
+        
+        // Convert project structure to match database format
+        const charactersObj = {};
+        project.characters.forEach(char => {
+          charactersObj[char.id] = {
+            name: char.name,
+            color: char.color,
+            sprites: char.sprites || []
+          };
+        });
+        
+        const eventsObj = {};
+        project.events.forEach(event => {
+          eventsObj[event.id] = { ...event };
+          delete eventsObj[event.id].id;
+          
+          // Update asset references in events
+          if (eventsObj[event.id].background) {
+            const filename = eventsObj[event.id].background.split('/').pop();
+            if (uploadedAssetUrls[filename]) {
+              eventsObj[event.id].background = uploadedAssetUrls[filename];
+            }
+          }
+          
+          if (eventsObj[event.id].sprite) {
+            const filename = eventsObj[event.id].sprite.split('/').pop();
+            if (uploadedAssetUrls[filename]) {
+              eventsObj[event.id].sprite = uploadedAssetUrls[filename];
+            }
+          }
+        });
+        
+        // Update sprite references in characters
+        Object.values(charactersObj).forEach(char => {
+          if (char.sprites && Array.isArray(char.sprites)) {
+            char.sprites = char.sprites.map(sprite => {
+              const filename = sprite.split('/').pop();
+              return uploadedAssetUrls[filename] || sprite;
+            });
+          }
+        });
+        
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Uploading game to cloud database...</p>';
+        
+        // Upload game to Supabase database
+        const gameData = {
+          title: project.info.title,
+          author: project.info.author,
+          description: project.info.description,
+          game_id: gameId,
+          config: {
+            title: project.info.title,
+            author: project.info.author,
+            initialEvent: project.info.initialEvent
+          },
+          characters: charactersObj,
+          events: eventsObj,
+          is_public: true
+        };
+        
+        const { data, error } = await supabase
+          .from('games')
+          .insert([gameData])
+          .select()
+          .single();
+        
+        if (error) {
+          if (error.code === '23505') {
+            throw new Error(`Game with ID "${gameId}" already exists. Please choose a different title or modify the game ID.`);
+          }
+          throw new Error(`Database error: ${error.message}`);
+        }
+        
+        statusDiv.style.background = 'rgba(34, 197, 94, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #22c55e';
+        statusDiv.innerHTML = `
+          <h4 style="color: #22c55e; margin: 0 0 10px 0;">✅ Cloud Import Successful!</h4>
+          <p style="color: #22c55e; margin: 0 0 5px 0;">Game "${project.info.title}" uploaded to cloud</p>
+          <p style="color: #ccc; margin: 0; font-size: 12px;">Game ID: ${gameId} | Assets uploaded: ${Object.keys(uploadedAssetUrls).length}</p>
+          <p style="color: #ccc; margin: 5px 0 0 0; font-size: 12px;">Your game is now publicly available in the cloud library! 🌊</p>
+        `;
+        
+      } catch (error) {
+        console.error('Cloud import error:', error);
+        statusDiv.style.background = 'rgba(255, 107, 107, 0.2)';
+        statusDiv.style.borderLeft = '4px solid #ff6b6b';
+        statusDiv.innerHTML = `
+          <h4 style="color: #ff6b6b; margin: 0 0 10px 0;">❌ Cloud Import Failed</h4>
+          <p style="color: #ff6b6b; margin: 0;">${error.message}</p>
+        `;
+        throw error;
+      }
+    }
 
     function getMimeType(filename) {
       const ext = filename.split('.').pop().toLowerCase();
