@@ -39,7 +39,11 @@ export class VisualNovelEngine {
       }
       
       // Start game
-      this.gameState.setCurrentEvent(this.config.startEvent);
+      const startEvent = this.config.startEvent || this.config.initialEvent;
+      if (!startEvent) {
+        throw new Error('No start event defined in game config');
+      }
+      this.gameState.setCurrentEvent(startEvent);
       await this.renderCurrentEvent();
       
     } catch (error) {

@@ -199,6 +199,20 @@ export class SupabaseGameManager {
       return []
     }
   }
+
+  // Increment download count for a game
+  async incrementDownloads(gameId) {
+    try {
+      const { data, error } = await supabase
+        .rpc('increment_download_count', { target_game_id: gameId })
+      
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error incrementing downloads:', error)
+      throw error
+    }
+  }
 }
 
 // Export singleton instance

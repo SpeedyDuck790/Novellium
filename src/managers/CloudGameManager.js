@@ -76,6 +76,7 @@ export class CloudGameManager {
         ...game,
         source: 'local',
         gameFolder: game.gameFolder,
+        folder: game.gameFolder, // Add folder property for compatibility
         isLocal: true
       }))
     } catch (error) {

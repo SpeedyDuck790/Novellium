@@ -1,7 +1,7 @@
 // API endpoint for download tracking and analytics
 // File: /api/downloads.js
 
-import { supabase, TABLES } from '../src/config/supabase.js'
+import { gameManager } from '../src/config/supabase.js'
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -41,43 +41,12 @@ async function handleRecordDownload(req, res) {
   }
 
   try {
-    // Get client IP and user agent
-    const clientIP = req.headers['x-forwarded-for'] || 
-                    req.headers['x-real-ip'] || 
-                    req.connection?.remoteAddress || 
-                    req.socket?.remoteAddress || 
-                    'unknown'
+    // Use simplified schema - just increment download count
+    const updatedCount = await gameManager.incrementDownloads(gameId)
     
-    const userAgent = req.headers['user-agent'] || 'unknown'
-
-    // Record the download
-    const { error: downloadError } = await supabase
-      .from(TABLES.GAME_DOWNLOADS)
-      .insert([{
-        game_id: gameId,
-        user_ip: clientIP,
-        user_agent: userAgent
-      }])
-
-    if (downloadError) {
-      console.error('Error recording download:', downloadError)
-    }
-
-    // Increment the game's download counter
-    const { data, error } = await supabase
-      .rpc('increment_downloads', { game_id: gameId })
-
-    if (error) {
-      console.error('Error incrementing download count:', error)
-      return res.status(500).json({ 
-        error: 'Failed to update download count',
-        message: error.message 
-      })
-    }
-
     return res.status(200).json({
       success: true,
-      newDownloadCount: data,
+      downloads: updatedCount,
       message: 'Download recorded successfully'
     })
   } catch (error) {
@@ -88,66 +57,40 @@ async function handleRecordDownload(req, res) {
   }
 }
 
-// GET /api/downloads - Get download statistics
+// GET /api/downloads - Get download statistics  
 async function handleGetDownloadStats(req, res) {
-  const { gameId, period = '7d' } = req.query
+  const { gameId } = req.query
 
   try {
-    let dateFilter = "downloaded_at >= NOW() - INTERVAL '7 days'"
-    
-    switch (period) {
-      case '1d':
-        dateFilter = "downloaded_at >= NOW() - INTERVAL '1 day'"
-        break
-      case '7d':
-        dateFilter = "downloaded_at >= NOW() - INTERVAL '7 days'"
-        break
-      case '30d':
-        dateFilter = "downloaded_at >= NOW() - INTERVAL '30 days'"
-        break
-      case 'all':
-        dateFilter = "TRUE" // No date filter
-        break
-      default:
-        dateFilter = "downloaded_at >= NOW() - INTERVAL '7 days'"
-    }
-
     if (gameId) {
       // Get stats for specific game
-      const { data, error } = await supabase
-        .from(TABLES.GAME_DOWNLOADS)
-        .select('downloaded_at')
-        .eq('game_id', gameId)
-        .gte('downloaded_at', 
-          period === 'all' ? '1970-01-01' : 
-          period === '1d' ? new Date(Date.now() - 24*60*60*1000).toISOString() :
-          period === '7d' ? new Date(Date.now() - 7*24*60*60*1000).toISOString() :
-          period === '30d' ? new Date(Date.now() - 30*24*60*60*1000).toISOString() :
-          new Date(Date.now() - 7*24*60*60*1000).toISOString()
-        )
-
-      if (error) throw error
+      const game = await gameManager.getGame(gameId)
+      if (!game) {
+        return res.status(404).json({ error: 'Game not found' })
+      }
 
       return res.status(200).json({
         gameId,
-        period,
-        downloadCount: data.length,
-        downloads: data
+        downloadCount: game.download_count || 0,
+        title: game.title,
+        author: game.author
       })
     } else {
-      // Get overall stats
-      const { data, error } = await supabase
-        .from('games_with_stats')
-        .select('id, title, author, download_count, downloads_today')
-        .order('download_count', { ascending: false })
-        .limit(20)
-
-      if (error) throw error
+      // Get top games by downloads
+      const games = await gameManager.getPublicGames()
+      const topGames = games
+        .sort((a, b) => (b.download_count || 0) - (a.download_count || 0))
+        .slice(0, 10)
+        .map(game => ({
+          id: game.id,
+          title: game.title,
+          author: game.author,
+          download_count: game.download_count || 0
+        }))
 
       return res.status(200).json({
-        period,
-        topGames: data,
-        totalGames: data.length
+        topGames,
+        totalGames: games.length
       })
     }
   } catch (error) {
