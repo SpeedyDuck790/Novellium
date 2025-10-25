@@ -1933,8 +1933,12 @@
       if (project.characters && Array.isArray(project.characters)) {
         project.characters.forEach(char => {
           console.log(`Character ${char.name || char.id}:`, char);
-          if (char.sprites && char.sprites.length > 0) {
-            console.log(`  - Sprites:`, char.sprites);
+          if (char.sprites) {
+            if (Array.isArray(char.sprites)) {
+              console.log(`  - Sprites (array):`, char.sprites);
+            } else if (typeof char.sprites === 'object') {
+              console.log(`  - Sprites (object):`, char.sprites);
+            }
           }
         });
       } else {
@@ -2023,13 +2027,29 @@
         
         // Update sprite references in characters
         Object.values(charactersObj).forEach(char => {
-          if (char.sprites && Array.isArray(char.sprites)) {
-            char.sprites = char.sprites.map(sprite => {
-              const filename = sprite.split('/').pop();
-              const cloudUrl = uploadedAssetUrls[filename];
-              console.log(`Updating sprite ${sprite} -> filename: ${filename} -> cloudUrl: ${cloudUrl || 'NOT FOUND'}`);
-              return cloudUrl || sprite;
-            });
+          if (char.sprites) {
+            if (Array.isArray(char.sprites)) {
+              // Handle array format
+              char.sprites = char.sprites.map(sprite => {
+                const filename = sprite.split('/').pop();
+                const cloudUrl = uploadedAssetUrls[filename];
+                console.log(`Updating sprite array ${sprite} -> filename: ${filename} -> cloudUrl: ${cloudUrl || 'NOT FOUND'}`);
+                return cloudUrl || sprite;
+              });
+            } else if (typeof char.sprites === 'object') {
+              // Handle object format (e.g., { neutral: "sprites/emma_neutral.png" })
+              Object.keys(char.sprites).forEach(spriteKey => {
+                const spritePath = char.sprites[spriteKey];
+                if (typeof spritePath === 'string' && spritePath.includes('/')) {
+                  const filename = spritePath.split('/').pop();
+                  const cloudUrl = uploadedAssetUrls[filename];
+                  console.log(`Updating sprite object ${spriteKey}: ${spritePath} -> filename: ${filename} -> cloudUrl: ${cloudUrl || 'NOT FOUND'}`);
+                  if (cloudUrl) {
+                    char.sprites[spriteKey] = cloudUrl;
+                  }
+                }
+              });
+            }
           }
         });
         
