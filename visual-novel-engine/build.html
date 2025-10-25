@@ -2138,100 +2138,260 @@
   </div> <!-- Close builder-content -->
   </div> <!-- Close builder-container -->
 
-  <!-- Settings Panel -->
+  <!-- Universal Settings Panel (matches index.html exactly) -->
   <div id="slide-menu" class="slide-menu">
-    <div class="slide-menu-header">
+    <div class="menu-header">
       <h3>⚙️ Settings</h3>
-      <button class="close-btn" onclick="closeSettings()">×</button>
+      <button id="close-menu" class="close-btn">✕</button>
     </div>
-    <div class="slide-menu-content">
+    <div class="settings-content">
       <div class="settings-section">
-        <h4>🎨 Display</h4>
+        <h4>🔊 Audio</h4>
         <div class="setting-item">
-          <label>Text Speed</label>
-          <input type="range" id="text-speed" min="1" max="10" value="5">
-          <span id="text-speed-value">5</span>
-        </div>
-        <div class="setting-item">
-          <label>Auto-Play Speed</label>
-          <input type="range" id="auto-speed" min="1" max="10" value="3">
-          <span id="auto-speed-value">3</span>
-        </div>
-        <div class="setting-item">
-          <label>Fullscreen Mode</label>
-          <button class="btn btn-secondary" onclick="toggleFullscreen()">Toggle Fullscreen</button>
+          <label for="master-volume">Master Volume:</label>
+          <input type="range" id="master-volume" min="0" max="100" value="70">
+          <span id="master-volume-value">70%</span>
         </div>
       </div>
 
       <div class="settings-section">
-        <h4>🔊 Audio</h4>
+        <h4>⌨️ Text Speed</h4>
         <div class="setting-item">
-          <label>Master Volume</label>
-          <input type="range" id="master-volume" min="0" max="100" value="70">
-          <span id="master-volume-value">70%</span>
+          <label for="typewriter-speed">Typewriter Effect Speed:</label>
+          <input type="range" id="typewriter-speed" min="1" max="10" value="5">
+          <span id="typewriter-speed-value">5</span>
         </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>🎨 Theme Colors</h4>
+        
         <div class="setting-item">
-          <label>Music Volume</label>
-          <input type="range" id="music-volume" min="0" max="100" value="60">
-          <span id="music-volume-value">60%</span>
+          <label for="primary-color">Primary Color (Gold Accents):</label>
+          <input type="color" id="primary-color" value="#ffd700">
+          <span class="color-preview" id="primary-preview">#ffd700</span>
         </div>
+        
         <div class="setting-item">
-          <label>Sound Effects</label>
-          <input type="range" id="sfx-volume" min="0" max="100" value="80">
-          <span id="sfx-volume-value">80%</span>
+          <label for="secondary-color">Secondary Color (Highlights):</label>
+          <input type="color" id="secondary-color" value="#ff6b6b">
+          <span class="color-preview" id="secondary-preview">#ff6b6b</span>
+        </div>
+        
+        <div class="setting-item">
+          <label for="background-color">Background Color:</label>
+          <input type="color" id="background-color" value="#1a1a2e">
+          <span class="color-preview" id="background-preview">#1a1a2e</span>
+        </div>
+        
+        <div class="setting-item">
+          <label for="text-color">Text Color:</label>
+          <input type="color" id="text-color" value="#ffffff">
+          <span class="color-preview" id="text-preview">#ffffff</span>
         </div>
       </div>
 
       <div class="settings-section">
         <h4>💾 Data Management</h4>
         <div class="setting-item">
-          <button class="btn btn-secondary" onclick="exportSettings()">📤 Export Settings</button>
-          <button class="btn btn-secondary" onclick="importSettings()">📥 Import Settings</button>
+          <button id="btn-export-settings" class="settings-btn export">📤 Export Settings</button>
+          <button id="btn-import-settings" class="settings-btn import">📥 Import Settings</button>
         </div>
         <div class="setting-item">
-          <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
-          <p class="setting-hint">⚠️ This will delete all saves and settings</p>
+          <button id="btn-export-saves" class="settings-btn export">💾 Export All Saves</button>
+          <button id="btn-import-saves" class="settings-btn import">📂 Import Saves</button>
+          <input type="file" id="import-saves-input" accept=".vnbackup,.vnsave" style="display: none;" multiple>
+        </div>
+        <div class="setting-item">
+          <button id="btn-reset-settings" class="settings-btn reset">🔄 Reset Settings</button>
         </div>
       </div>
 
       <div class="settings-section">
-        <h4>ℹ️ About</h4>
-        <p class="about-text">
-          <strong>Novellium Builder</strong><br>
-          Visual Novel Creation Tool<br>
-          Version 1.0.0
-        </p>
+        <h4>📖 Help</h4>
         <div class="setting-item">
-          <button class="btn btn-secondary" onclick="window.open('https://github.com/novellium', '_blank')">📖 Documentation</button>
+          <button id="btn-documentation" class="settings-btn help">📚 Documentation</button>
         </div>
+      </div>
+      
+      <div class="settings-actions">
+        <button id="btn-apply-settings" class="settings-btn apply">✓ Apply Changes</button>
       </div>
     </div>
   </div>
 
   <script>
-    // Settings panel functions
-    function closeSettings() {
-      document.getElementById('slide-menu').classList.remove('active');
-    }
+    // Import SaveManager for save file management
+    import('./src/managers/SaveManager.js').then(module => {
+      window.saveManager = new module.SaveManager();
+    }).catch(error => {
+      console.error('Failed to load SaveManager:', error);
+      // Create a fallback object with alert messages
+      window.saveManager = {
+        exportAllSaves: () => alert('Save export not available in builder mode'),
+        importAllSaves: () => alert('Save import not available in builder mode'),
+        importSaveFromFile: () => alert('Save import not available in builder mode')
+      };
+    });
 
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
+    // Universal Settings functions (shared with index.html)
+    const defaultSettings = {
+      masterVolume: 70,
+      typewriterSpeed: 5,
+      colors: {
+        primary: '#ffd700',
+        secondary: '#ff6b6b',
+        background: '#1a1a2e',
+        text: '#ffffff'
+      }
+    };
+
+    // Load saved settings from localStorage
+    function loadSettings() {
+      const saved = localStorage.getItem('novellium_universal_settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        document.getElementById('master-volume').value = settings.masterVolume || defaultSettings.masterVolume;
+        document.getElementById('typewriter-speed').value = settings.typewriterSpeed || defaultSettings.typewriterSpeed;
+        document.getElementById('primary-color').value = settings.colors.primary || defaultSettings.colors.primary;
+        document.getElementById('secondary-color').value = settings.colors.secondary || defaultSettings.colors.secondary;
+        document.getElementById('background-color').value = settings.colors.background || defaultSettings.colors.background;
+        document.getElementById('text-color').value = settings.colors.text || defaultSettings.colors.text;
+        updateSettingsValues();
+        applySettings(settings);
       } else {
-        document.exitFullscreen();
+        updateSettingsValues();
+        applySettings(defaultSettings);
       }
     }
 
-    function exportSettings() {
-      const settings = {
-        textSpeed: document.getElementById('text-speed').value,
-        autoSpeed: document.getElementById('auto-speed').value,
-        masterVolume: document.getElementById('master-volume').value,
-        musicVolume: document.getElementById('music-volume').value,
-        sfxVolume: document.getElementById('sfx-volume').value,
-        exportedAt: new Date().toISOString()
-      };
+    // Update setting value displays
+    function updateSettingsValues() {
+      document.getElementById('master-volume-value').textContent = document.getElementById('master-volume').value + '%';
+      document.getElementById('typewriter-speed-value').textContent = document.getElementById('typewriter-speed').value;
+      document.getElementById('primary-preview').textContent = document.getElementById('primary-color').value;
+      document.getElementById('secondary-preview').textContent = document.getElementById('secondary-color').value;
+      document.getElementById('background-preview').textContent = document.getElementById('background-color').value;
+      document.getElementById('text-preview').textContent = document.getElementById('text-color').value;
+    }
+
+    // Apply settings to both pages
+    function applySettings(settings) {
+      // Apply colors to CSS variables
+      document.documentElement.style.setProperty('--primary-color', settings.colors.primary);
+      document.documentElement.style.setProperty('--secondary-color', settings.colors.secondary);
+      document.documentElement.style.setProperty('--background-color', settings.colors.background);
+      document.documentElement.style.setProperty('--text-color', settings.colors.text);
       
+      // Create dynamic CSS overrides for both pages
+      let dynamicStyle = document.getElementById('dynamic-universal-theme');
+      if (!dynamicStyle) {
+        dynamicStyle = document.createElement('style');
+        dynamicStyle.id = 'dynamic-universal-theme';
+        document.head.appendChild(dynamicStyle);
+      }
+      
+      dynamicStyle.textContent = `
+        /* Universal theme overrides for both index and builder */
+        .brand-gradient,
+        .vertical-game-card.selected,
+        .carousel-game-card.selected,
+        .menu-header h3,
+        .sidebar-header h2,
+        .vertical-game-info h3,
+        .welcome-content h1,
+        .game-options-header h2,
+        .saves-section h3,
+        .settings-section h4,
+        .section-header h2,
+        .builder-nav li.active,
+        .nav-btn.primary,
+        h1, h2, h3, h4 {
+          color: ${settings.colors.primary} !important;
+        }
+        
+        .vertical-game-card.selected,
+        .vertical-game-card:hover,
+        .builder-nav li:hover,
+        .builder-nav li.active,
+        input:checked + .toggle-slider {
+          border-color: ${settings.colors.primary} !important;
+        }
+        
+        /* Button colors */
+        .game-action-btn.new-game,
+        .settings-btn.apply,
+        .nav-btn.primary,
+        .btn-primary {
+          background: linear-gradient(135deg, ${settings.colors.primary}, ${settings.colors.secondary}) !important;
+          color: ${settings.colors.background} !important;
+        }
+        
+        .game-action-btn.new-game:hover,
+        .settings-btn.apply:hover,
+        .btn-primary:hover {
+          box-shadow: 0 6px 20px ${settings.colors.primary}66 !important;
+        }
+        
+        /* Background colors */
+        body,
+        .start-screen,
+        .content-area,
+        .builder-container,
+        .slide-menu {
+          background-color: ${settings.colors.background} !important;
+        }
+        
+        /* Text colors */
+        body,
+        .content-area,
+        .slide-menu,
+        .builder-container {
+          color: ${settings.colors.text} !important;
+        }
+        
+        /* Brand gradient override */
+        .brand-gradient {
+          background: linear-gradient(45deg, ${settings.colors.primary}, ${settings.colors.secondary}) !important;
+          -webkit-background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+          background-clip: text !important;
+        }
+        
+        /* Navbar highlighting */
+        .nav-btn.primary {
+          background: linear-gradient(135deg, ${settings.colors.primary}, ${settings.colors.secondary}) !important;
+          color: ${settings.colors.background} !important;
+          border-color: ${settings.colors.primary} !important;
+        }
+      `;
+      
+      // Save settings
+      const settingsToSave = {
+        masterVolume: settings.masterVolume,
+        typewriterSpeed: settings.typewriterSpeed,
+        colors: settings.colors
+      };
+      localStorage.setItem('novellium_universal_settings', JSON.stringify(settingsToSave));
+    }
+
+    // Collect current settings from form
+    function getCurrentSettings() {
+      return {
+        masterVolume: parseInt(document.getElementById('master-volume').value),
+        typewriterSpeed: parseInt(document.getElementById('typewriter-speed').value),
+        colors: {
+          primary: document.getElementById('primary-color').value,
+          secondary: document.getElementById('secondary-color').value,
+          background: document.getElementById('background-color').value,
+          text: document.getElementById('text-color').value
+        }
+      };
+    }
+
+    // Export settings
+    function exportSettings() {
+      const settings = getCurrentSettings();
       const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2241,8 +2401,10 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      alert('Settings exported successfully!');
     }
 
+    // Import settings
     function importSettings() {
       const input = document.createElement('input');
       input.type = 'file';
@@ -2254,12 +2416,14 @@
           reader.onload = (e) => {
             try {
               const settings = JSON.parse(e.target.result);
-              if (settings.textSpeed) document.getElementById('text-speed').value = settings.textSpeed;
-              if (settings.autoSpeed) document.getElementById('auto-speed').value = settings.autoSpeed;
-              if (settings.masterVolume) document.getElementById('master-volume').value = settings.masterVolume;
-              if (settings.musicVolume) document.getElementById('music-volume').value = settings.musicVolume;
-              if (settings.sfxVolume) document.getElementById('sfx-volume').value = settings.sfxVolume;
+              document.getElementById('master-volume').value = settings.masterVolume || defaultSettings.masterVolume;
+              document.getElementById('typewriter-speed').value = settings.typewriterSpeed || defaultSettings.typewriterSpeed;
+              document.getElementById('primary-color').value = settings.colors.primary || defaultSettings.colors.primary;
+              document.getElementById('secondary-color').value = settings.colors.secondary || defaultSettings.colors.secondary;
+              document.getElementById('background-color').value = settings.colors.background || defaultSettings.colors.background;
+              document.getElementById('text-color').value = settings.colors.text || defaultSettings.colors.text;
               updateSettingsValues();
+              applySettings(settings);
               alert('Settings imported successfully!');
             } catch (error) {
               alert('Error importing settings: ' + error.message);
@@ -2271,37 +2435,121 @@
       input.click();
     }
 
-    function clearAllData() {
-      if (confirm('⚠️ This will permanently delete all builder data, saves, and settings. Are you sure?')) {
-        if (confirm('This action cannot be undone. Continue?')) {
-          localStorage.clear();
-          // Clear IndexedDB
-          const deleteReq = indexedDB.deleteDatabase('VNBuilderAssets');
-          deleteReq.onsuccess = () => {
-            alert('All data cleared. Page will reload.');
-            window.location.reload();
-          };
-        }
+    // Reset settings
+    function resetSettings() {
+      if (confirm('Reset all settings to default values?')) {
+        document.getElementById('master-volume').value = defaultSettings.masterVolume;
+        document.getElementById('typewriter-speed').value = defaultSettings.typewriterSpeed;
+        document.getElementById('primary-color').value = defaultSettings.colors.primary;
+        document.getElementById('secondary-color').value = defaultSettings.colors.secondary;
+        document.getElementById('background-color').value = defaultSettings.colors.background;
+        document.getElementById('text-color').value = defaultSettings.colors.text;
+        updateSettingsValues();
+        applySettings(defaultSettings);
+        alert('Settings reset to defaults!');
       }
     }
 
-    function updateSettingsValues() {
-      document.getElementById('text-speed-value').textContent = document.getElementById('text-speed').value;
-      document.getElementById('auto-speed-value').textContent = document.getElementById('auto-speed').value;
-      document.getElementById('master-volume-value').textContent = document.getElementById('master-volume').value + '%';
-      document.getElementById('music-volume-value').textContent = document.getElementById('music-volume').value + '%';
-      document.getElementById('sfx-volume-value').textContent = document.getElementById('sfx-volume').value + '%';
+    function closeSettings() {
+      document.getElementById('slide-menu').classList.remove('active');
     }
 
-    // Settings range inputs event listeners
+    // Close menu handler
+    document.getElementById('close-menu').onclick = () => {
+      document.getElementById('slide-menu').classList.remove('active');
+    };
+
+    // Settings input event listeners
     document.addEventListener('DOMContentLoaded', () => {
-      updateSettingsValues();
+      // Load settings on page load
+      loadSettings();
       
-      document.getElementById('text-speed').addEventListener('input', updateSettingsValues);
-      document.getElementById('auto-speed').addEventListener('input', updateSettingsValues);
+      // Range input listeners
       document.getElementById('master-volume').addEventListener('input', updateSettingsValues);
-      document.getElementById('music-volume').addEventListener('input', updateSettingsValues);
-      document.getElementById('sfx-volume').addEventListener('input', updateSettingsValues);
+      document.getElementById('typewriter-speed').addEventListener('input', updateSettingsValues);
+      
+      // Color input listeners
+      document.getElementById('primary-color').addEventListener('input', updateSettingsValues);
+      document.getElementById('secondary-color').addEventListener('input', updateSettingsValues);
+      document.getElementById('background-color').addEventListener('input', updateSettingsValues);
+      document.getElementById('text-color').addEventListener('input', updateSettingsValues);
+      
+      // Button listeners
+      document.getElementById('btn-apply-settings').onclick = () => {
+        const settings = getCurrentSettings();
+        applySettings(settings);
+        alert('Settings applied!');
+        document.getElementById('slide-menu').classList.remove('active');
+      };
+      
+      document.getElementById('btn-export-settings').onclick = exportSettings;
+      document.getElementById('btn-import-settings').onclick = importSettings;
+      document.getElementById('btn-reset-settings').onclick = resetSettings;
+      
+      // Save management functionality
+      document.getElementById('btn-export-saves').onclick = async () => {
+        try {
+          if (window.saveManager && window.saveManager.exportAllSaves) {
+            await window.saveManager.exportAllSaves();
+            alert('All saves exported successfully!');
+          } else {
+            alert('Save export functionality not available');
+          }
+        } catch (error) {
+          console.error('Export failed:', error);
+          alert('Failed to export saves');
+        }
+      };
+
+      document.getElementById('btn-import-saves').onclick = () => {
+        document.getElementById('import-saves-input').click();
+      };
+
+      document.getElementById('import-saves-input').onchange = async (e) => {
+        const files = e.target.files;
+        if (!files.length) return;
+
+        let imported = 0;
+        let failed = 0;
+
+        for (const file of files) {
+          try {
+            if (window.saveManager) {
+              if (file.name.endsWith('.vnbackup')) {
+                // Import bundle of saves
+                const result = await window.saveManager.importAllSaves(file);
+                imported += result.imported;
+              } else if (file.name.endsWith('.vnsave')) {
+                // Import single save
+                await window.saveManager.importSaveFromFile(file);
+                imported++;
+              }
+            } else {
+              throw new Error('SaveManager not available');
+            }
+          } catch (error) {
+            console.error('Import failed for', file.name, error);
+            failed++;
+          }
+        }
+
+        if (imported > 0) {
+          alert(`Imported ${imported} save(s)${failed > 0 ? `, ${failed} failed` : ''}`);
+        } else {
+          alert('No saves imported');
+        }
+
+        // Reset file input
+        e.target.value = '';
+      };
+      
+      document.getElementById('btn-documentation').onclick = () => {
+        try {
+          window.open('README.pdf', '_blank');
+        } catch (error) {
+          alert('Documentation PDF not found. Please ensure README.pdf is in the project directory.');
+        }
+      };
     });
 
     // Close settings when clicking outside

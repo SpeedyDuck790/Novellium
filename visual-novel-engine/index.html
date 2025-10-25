@@ -21,19 +21,37 @@
         <button id="close-menu" class="close-btn">✕</button>
       </div>
       
-      <!-- Settings content -->
+      <!-- Universal Settings content -->
       <div class="settings-content">
         <div class="settings-section">
-          <h4>UI Colors</h4>
+          <h4>🔊 Audio</h4>
+          <div class="setting-item">
+            <label for="master-volume">Master Volume:</label>
+            <input type="range" id="master-volume" min="0" max="100" value="70">
+            <span id="master-volume-value">70%</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>⌨️ Text Speed</h4>
+          <div class="setting-item">
+            <label for="typewriter-speed">Typewriter Effect Speed:</label>
+            <input type="range" id="typewriter-speed" min="1" max="10" value="5">
+            <span id="typewriter-speed-value">5</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>🎨 Theme Colors</h4>
           
           <div class="setting-item">
-            <label for="primary-color">Primary Color:</label>
+            <label for="primary-color">Primary Color (Gold Accents):</label>
             <input type="color" id="primary-color" value="#ffd700">
             <span class="color-preview" id="primary-preview">#ffd700</span>
           </div>
           
           <div class="setting-item">
-            <label for="secondary-color">Secondary Color:</label>
+            <label for="secondary-color">Secondary Color (Highlights):</label>
             <input type="color" id="secondary-color" value="#ff6b6b">
             <span class="color-preview" id="secondary-preview">#ff6b6b</span>
           </div>
@@ -49,55 +67,33 @@
             <input type="color" id="text-color" value="#ffffff">
             <span class="color-preview" id="text-preview">#ffffff</span>
           </div>
-          
-          <div class="setting-item">
-            <label for="dialogue-bg-color">Dialogue Box Background:</label>
-            <input type="color" id="dialogue-bg-color" value="#000000">
-            <span class="color-preview" id="dialogue-bg-preview">#000000</span>
-            <input type="range" id="dialogue-bg-opacity" min="0" max="100" value="80">
-            <span class="opacity-label">Opacity: <span id="dialogue-opacity-value">80</span>%</span>
-          </div>
-          
-          <div class="setting-item">
-            <label for="button-color">Button Color:</label>
-            <input type="color" id="button-color" value="#ffd700">
-            <span class="color-preview" id="button-preview">#ffd700</span>
-          </div>
-          
-          <div class="setting-item">
-            <label for="button-hover-color">Button Hover Color:</label>
-            <input type="color" id="button-hover-color" value="#ffed4e">
-            <span class="color-preview" id="button-hover-preview">#ffed4e</span>
-          </div>
         </div>
-        
+
         <div class="settings-section">
-          <h4>💾 Save File Management</h4>
-          
+          <h4>💾 Data Management</h4>
           <div class="setting-item">
-            <label>Backup & Restore</label>
-            <p class="setting-description">Export saves to your local device to prevent data loss when browser cache is cleared.</p>
-            <div class="button-group">
-              <button id="btn-export-all-saves" class="settings-btn export">📥 Export All Saves</button>
-              <button id="btn-import-saves" class="settings-btn import">📤 Import Saves</button>
-            </div>
+            <button id="btn-export-settings" class="settings-btn export">📤 Export Settings</button>
+            <button id="btn-import-settings" class="settings-btn import">📥 Import Settings</button>
+          </div>
+          <div class="setting-item">
+            <button id="btn-export-saves" class="settings-btn export">💾 Export All Saves</button>
+            <button id="btn-import-saves" class="settings-btn import">📂 Import Saves</button>
             <input type="file" id="import-saves-input" accept=".vnbackup,.vnsave" style="display: none;" multiple>
           </div>
-          
           <div class="setting-item">
-            <label>Auto-Backup</label>
-            <p class="setting-description">Automatically download a backup file each time you save.</p>
-            <label class="toggle-switch">
-              <input type="checkbox" id="auto-backup-toggle" checked>
-              <span class="toggle-slider"></span>
-            </label>
-            <span id="auto-backup-status" class="status-text">Enabled</span>
+            <button id="btn-reset-settings" class="settings-btn reset">🔄 Reset Settings</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>📖 Help</h4>
+          <div class="setting-item">
+            <button id="btn-documentation" class="settings-btn help">📚 Documentation</button>
           </div>
         </div>
         
         <div class="settings-actions">
-          <button id="btn-reset-colors" class="settings-btn reset">🔄 Reset to Default</button>
-          <button id="btn-apply-colors" class="settings-btn apply">✓ Apply Colors</button>
+          <button id="btn-apply-settings" class="settings-btn apply">✓ Apply Changes</button>
         </div>
       </div>
     </div>
@@ -155,7 +151,7 @@
         }
         
         console.log('Games list loaded:', gamesList);
-        populateGamesCarousel();
+        // Don't call populateGamesCarousel here - it will be called by showStartScreen()
       } catch (error) {
         console.error('Failed to load games list:', error);
         showFeedback('Failed to load games list', 'error');
@@ -592,64 +588,66 @@
       document.getElementById('slide-menu').classList.remove('active');
     };
     
-    // Settings functionality
-    const defaultColors = {
-      primary: '#ffd700',
-      secondary: '#ff6b6b',
-      background: '#1a1a2e',
-      text: '#ffffff',
-      dialogueBg: '#000000',
-      dialogueOpacity: 80,
-      button: '#ffd700',
-      buttonHover: '#ffed4e'
+    // Universal Settings functionality
+    const defaultSettings = {
+      masterVolume: 70,
+      typewriterSpeed: 5,
+      colors: {
+        primary: '#ffd700',
+        secondary: '#ff6b6b',
+        background: '#1a1a2e',
+        text: '#ffffff'
+      }
     };
     
-    // Load saved colors from localStorage
-    function loadColors() {
-      const saved = localStorage.getItem('vn_theme_colors');
+    // Load saved settings from localStorage
+    function loadSettings() {
+      const saved = localStorage.getItem('novellium_universal_settings');
       if (saved) {
-        const colors = JSON.parse(saved);
-        document.getElementById('primary-color').value = colors.primary;
-        document.getElementById('secondary-color').value = colors.secondary;
-        document.getElementById('background-color').value = colors.background;
-        document.getElementById('text-color').value = colors.text;
-        document.getElementById('dialogue-bg-color').value = colors.dialogueBg;
-        document.getElementById('dialogue-bg-opacity').value = colors.dialogueOpacity;
-        document.getElementById('button-color').value = colors.button;
-        document.getElementById('button-hover-color').value = colors.buttonHover;
-        updateColorPreviews();
-        applyColors(colors);
+        const settings = JSON.parse(saved);
+        document.getElementById('master-volume').value = settings.masterVolume || defaultSettings.masterVolume;
+        document.getElementById('typewriter-speed').value = settings.typewriterSpeed || defaultSettings.typewriterSpeed;
+        document.getElementById('primary-color').value = settings.colors.primary || defaultSettings.colors.primary;
+        document.getElementById('secondary-color').value = settings.colors.secondary || defaultSettings.colors.secondary;
+        document.getElementById('background-color').value = settings.colors.background || defaultSettings.colors.background;
+        document.getElementById('text-color').value = settings.colors.text || defaultSettings.colors.text;
+        updateSettingsValues();
+        applySettings(settings);
+      } else {
+        updateSettingsValues();
+        applySettings(defaultSettings);
       }
     }
     
-    // Update color preview labels
-    function updateColorPreviews() {
+    // Update setting value displays
+    function updateSettingsValues() {
+      document.getElementById('master-volume-value').textContent = document.getElementById('master-volume').value + '%';
+      document.getElementById('typewriter-speed-value').textContent = document.getElementById('typewriter-speed').value;
       document.getElementById('primary-preview').textContent = document.getElementById('primary-color').value;
       document.getElementById('secondary-preview').textContent = document.getElementById('secondary-color').value;
       document.getElementById('background-preview').textContent = document.getElementById('background-color').value;
       document.getElementById('text-preview').textContent = document.getElementById('text-color').value;
-      document.getElementById('dialogue-bg-preview').textContent = document.getElementById('dialogue-bg-color').value;
-      document.getElementById('button-preview').textContent = document.getElementById('button-color').value;
-      document.getElementById('button-hover-preview').textContent = document.getElementById('button-hover-color').value;
-      document.getElementById('dialogue-opacity-value').textContent = document.getElementById('dialogue-bg-opacity').value;
     }
     
-    // Apply colors to CSS variables AND dynamic style overrides
-    function applyColors(colors) {
-      // Set CSS variables
-      document.documentElement.style.setProperty('--primary-color', colors.primary);
-      document.documentElement.style.setProperty('--secondary-color', colors.secondary);
-      document.documentElement.style.setProperty('--background-color', colors.background);
-      document.documentElement.style.setProperty('--text-color', colors.text);
-      document.documentElement.style.setProperty('--dialogue-bg-color', colors.dialogueBg);
-      document.documentElement.style.setProperty('--dialogue-bg-opacity', colors.dialogueOpacity / 100);
-      document.documentElement.style.setProperty('--button-color', colors.button);
-      document.documentElement.style.setProperty('--button-hover-color', colors.buttonHover);
+    // Apply settings to both pages
+    function applySettings(settings) {
+      // Apply colors to CSS variables
+      document.documentElement.style.setProperty('--primary-color', settings.colors.primary);
+      document.documentElement.style.setProperty('--secondary-color', settings.colors.secondary);
+      document.documentElement.style.setProperty('--background-color', settings.colors.background);
+      document.documentElement.style.setProperty('--text-color', settings.colors.text);
       
-      // Create dynamic CSS overrides that target actual UI elements
-      const dynamicStyle = document.getElementById('dynamic-theme');
+      // Create dynamic CSS overrides for both pages
+      let dynamicStyle = document.getElementById('dynamic-universal-theme');
+      if (!dynamicStyle) {
+        dynamicStyle = document.createElement('style');
+        dynamicStyle.id = 'dynamic-universal-theme';
+        document.head.appendChild(dynamicStyle);
+      }
+      
       dynamicStyle.textContent = `
-        /* Primary color overrides */
+        /* Universal theme overrides for both index and builder */
+        .brand-gradient,
         .vertical-game-card.selected,
         .carousel-game-card.selected,
         .menu-header h3,
@@ -659,167 +657,260 @@
         .game-options-header h2,
         .saves-section h3,
         .settings-section h4,
+        .section-header h2,
+        .builder-nav li.active,
+        .nav-btn.primary,
         h1, h2, h3, h4 {
-          color: ${colors.primary} !important;
+          color: ${settings.colors.primary} !important;
         }
         
         .vertical-game-card.selected,
         .vertical-game-card:hover,
+        .builder-nav li:hover,
+        .builder-nav li.active,
         input:checked + .toggle-slider {
-          border-color: ${colors.primary} !important;
-        }
-        
-        input:checked + .toggle-slider:before {
-          background-color: ${colors.primary} !important;
+          border-color: ${settings.colors.primary} !important;
         }
         
         /* Button colors */
         .game-action-btn.new-game,
         .settings-btn.apply,
-        .nav-btn.primary {
-          background: linear-gradient(135deg, ${colors.button}, ${colors.buttonHover}) !important;
+        .nav-btn.primary,
+        .btn-primary {
+          background: linear-gradient(135deg, ${settings.colors.primary}, ${settings.colors.secondary}) !important;
+          color: ${settings.colors.background} !important;
         }
         
         .game-action-btn.new-game:hover,
-        .settings-btn.apply:hover {
-          box-shadow: 0 6px 20px ${colors.button}66 !important;
+        .settings-btn.apply:hover,
+        .btn-primary:hover {
+          box-shadow: 0 6px 20px ${settings.colors.primary}66 !important;
         }
         
-        /* Secondary color overrides */
-        .game-menu h1,
-        .welcome-section h1 {
-          background: linear-gradient(45deg, ${colors.primary}, ${colors.secondary}) !important;
+        /* Background colors */
+        body,
+        .start-screen,
+        .content-area,
+        .builder-container,
+        .slide-menu {
+          background-color: ${settings.colors.background} !important;
+        }
+        
+        /* Text colors */
+        body,
+        .content-area,
+        .slide-menu,
+        .builder-container {
+          color: ${settings.colors.text} !important;
+        }
+        
+        /* Brand gradient override */
+        .brand-gradient {
+          background: linear-gradient(45deg, ${settings.colors.primary}, ${settings.colors.secondary}) !important;
           -webkit-background-clip: text !important;
           -webkit-text-fill-color: transparent !important;
           background-clip: text !important;
         }
         
-        /* Background color */
-        .start-screen,
-        .content-area,
-        .game-menu {
-          background: linear-gradient(135deg, ${colors.background}, ${colors.background}dd) !important;
-        }
-        
-        /* Text color */
-        body,
-        .app-container,
-        .save-name,
-        .vertical-game-card,
-        .setting-item label {
-          color: ${colors.text} !important;
-        }
-        
-        /* Dialogue box */
-        .dialogue-box {
-          background-color: ${colors.dialogueBg} !important;
-          opacity: ${colors.dialogueOpacity / 100} !important;
+        /* Navbar highlighting */
+        .nav-btn.primary {
+          background: linear-gradient(135deg, ${settings.colors.primary}, ${settings.colors.secondary}) !important;
+          color: ${settings.colors.background} !important;
+          border-color: ${settings.colors.primary} !important;
         }
       `;
+      
+      // Save settings
+      const settingsToSave = {
+        masterVolume: settings.masterVolume,
+        typewriterSpeed: settings.typewriterSpeed,
+        colors: settings.colors
+      };
+      localStorage.setItem('novellium_universal_settings', JSON.stringify(settingsToSave));
     }
     
-    // Color input change listeners
-    document.querySelectorAll('input[type="color"], input[type="range"]').forEach(input => {
-      input.addEventListener('input', updateColorPreviews);
-    });
+    // Collect current settings from form
+    function getCurrentSettings() {
+      return {
+        masterVolume: parseInt(document.getElementById('master-volume').value),
+        typewriterSpeed: parseInt(document.getElementById('typewriter-speed').value),
+        colors: {
+          primary: document.getElementById('primary-color').value,
+          secondary: document.getElementById('secondary-color').value,
+          background: document.getElementById('background-color').value,
+          text: document.getElementById('text-color').value
+        }
+      };
+    }
     
-    // Apply colors button
-    document.getElementById('btn-apply-colors').onclick = () => {
-      const colors = {
-        primary: document.getElementById('primary-color').value,
-        secondary: document.getElementById('secondary-color').value,
-        background: document.getElementById('background-color').value,
-        text: document.getElementById('text-color').value,
-        dialogueBg: document.getElementById('dialogue-bg-color').value,
-        dialogueOpacity: parseInt(document.getElementById('dialogue-bg-opacity').value),
-        button: document.getElementById('button-color').value,
-        buttonHover: document.getElementById('button-hover-color').value
+    // Export settings
+    function exportSettings() {
+      const settings = getCurrentSettings();
+      const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'novellium-settings.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showFeedback('Settings exported successfully!');
+    }
+    
+    // Import settings
+    function importSettings() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const settings = JSON.parse(e.target.result);
+              document.getElementById('master-volume').value = settings.masterVolume || defaultSettings.masterVolume;
+              document.getElementById('typewriter-speed').value = settings.typewriterSpeed || defaultSettings.typewriterSpeed;
+              document.getElementById('primary-color').value = settings.colors.primary || defaultSettings.colors.primary;
+              document.getElementById('secondary-color').value = settings.colors.secondary || defaultSettings.colors.secondary;
+              document.getElementById('background-color').value = settings.colors.background || defaultSettings.colors.background;
+              document.getElementById('text-color').value = settings.colors.text || defaultSettings.colors.text;
+              updateSettingsValues();
+              applySettings(settings);
+              showFeedback('Settings imported successfully!');
+            } catch (error) {
+              showFeedback('Error importing settings: ' + error.message, 'error');
+            }
+          };
+          reader.readAsText(file);
+        }
+      };
+      input.click();
+    }
+    
+    // Reset settings
+    function resetSettings() {
+      if (confirm('Reset all settings to default values?')) {
+        document.getElementById('master-volume').value = defaultSettings.masterVolume;
+        document.getElementById('typewriter-speed').value = defaultSettings.typewriterSpeed;
+        document.getElementById('primary-color').value = defaultSettings.colors.primary;
+        document.getElementById('secondary-color').value = defaultSettings.colors.secondary;
+        document.getElementById('background-color').value = defaultSettings.colors.background;
+        document.getElementById('text-color').value = defaultSettings.colors.text;
+        updateSettingsValues();
+        applySettings(defaultSettings);
+        showFeedback('Settings reset to defaults!');
+      }
+    }
+    
+    // Settings input event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load settings on page load
+      loadSettings();
+      
+      // Range input listeners
+      document.getElementById('master-volume').addEventListener('input', updateSettingsValues);
+      document.getElementById('typewriter-speed').addEventListener('input', updateSettingsValues);
+      
+      // Color input listeners
+      document.getElementById('primary-color').addEventListener('input', updateSettingsValues);
+      document.getElementById('secondary-color').addEventListener('input', updateSettingsValues);
+      document.getElementById('background-color').addEventListener('input', updateSettingsValues);
+      document.getElementById('text-color').addEventListener('input', updateSettingsValues);
+      
+      // Button listeners
+      document.getElementById('btn-apply-settings').onclick = () => {
+        const settings = getCurrentSettings();
+        applySettings(settings);
+        showFeedback('Settings applied!');
+        document.getElementById('slide-menu').classList.remove('active');
       };
       
-      applyColors(colors);
-      localStorage.setItem('vn_theme_colors', JSON.stringify(colors));
-      showFeedback('Colors applied!');
-      document.getElementById('slide-menu').classList.remove('active');
-    };
+      document.getElementById('btn-export-settings').onclick = exportSettings;
+      document.getElementById('btn-import-settings').onclick = importSettings;
+      document.getElementById('btn-reset-settings').onclick = resetSettings;
+      
+      // Save management functionality
+      document.getElementById('btn-export-saves').onclick = async () => {
+        try {
+          await saveManager.exportAllSaves();
+          showFeedback('All saves exported successfully!');
+        } catch (error) {
+          console.error('Export failed:', error);
+          showFeedback('Failed to export saves', 'error');
+        }
+      };
+
+      document.getElementById('btn-import-saves').onclick = () => {
+        document.getElementById('import-saves-input').click();
+      };
+
+      document.getElementById('import-saves-input').onchange = async (e) => {
+        const files = e.target.files;
+        if (!files.length) return;
+
+        let imported = 0;
+        let failed = 0;
+
+        for (const file of files) {
+          try {
+            if (file.name.endsWith('.vnbackup')) {
+              // Import bundle of saves
+              const result = await saveManager.importAllSaves(file);
+              imported += result.imported;
+            } else if (file.name.endsWith('.vnsave')) {
+              // Import single save
+              await saveManager.importSaveFromFile(file);
+              imported++;
+            }
+          } catch (error) {
+            console.error('Import failed for', file.name, error);
+            failed++;
+          }
+        }
+
+        if (imported > 0) {
+          showFeedback(`Imported ${imported} save(s)${failed > 0 ? `, ${failed} failed` : ''}`);
+          // Refresh the current game's save list if a game is selected
+          if (selectedGameOnStart) {
+            loadStartSavesForGame(selectedGameOnStart.folder);
+          }
+        } else {
+          showFeedback('No saves imported', 'error');
+        }
+
+        // Reset file input
+        e.target.value = '';
+      };
+      
+      document.getElementById('btn-documentation').onclick = () => {
+        try {
+          window.open('README.pdf', '_blank');
+        } catch (error) {
+          alert('Documentation PDF not found. Please ensure README.pdf is in the project directory.');
+        }
+      };
+    });
     
     // Reset colors button
-    document.getElementById('btn-reset-colors').onclick = () => {
-      document.getElementById('primary-color').value = defaultColors.primary;
-      document.getElementById('secondary-color').value = defaultColors.secondary;
-      document.getElementById('background-color').value = defaultColors.background;
-      document.getElementById('text-color').value = defaultColors.text;
-      document.getElementById('dialogue-bg-color').value = defaultColors.dialogueBg;
-      document.getElementById('dialogue-bg-opacity').value = defaultColors.dialogueOpacity;
-      document.getElementById('button-color').value = defaultColors.button;
-      document.getElementById('button-hover-color').value = defaultColors.buttonHover;
-      updateColorPreviews();
-      applyColors(defaultColors);
-      localStorage.removeItem('vn_theme_colors');
-      showFeedback('Reset to default colors');
-    };
+    // Setup auto-backup toggle
+    const autoBackupToggle = document.getElementById('auto-backup-toggle');
+    const autoBackupStatus = document.getElementById('auto-backup-status');
     
-    // Save file management functionality
-    document.getElementById('btn-export-all-saves').onclick = async () => {
-      try {
-        await saveManager.exportAllSaves();
-        showFeedback('All saves exported successfully!');
-      } catch (error) {
-        console.error('Export failed:', error);
-        showFeedback('Failed to export saves', 'error');
-      }
-    };
+    if (autoBackupToggle && autoBackupStatus) {
+      autoBackupToggle.checked = saveManager.autoBackup;
+      autoBackupStatus.textContent = saveManager.autoBackup ? 'Enabled' : 'Disabled';
+      
+      autoBackupToggle.onchange = () => {
+        saveManager.autoBackup = autoBackupToggle.checked;
+        autoBackupStatus.textContent = saveManager.autoBackup ? 'Enabled' : 'Disabled';
+        localStorage.setItem('vn_auto_backup', saveManager.autoBackup.toString());
+        showFeedback(saveManager.autoBackup ? 'Auto-backup enabled' : 'Auto-backup disabled');
+      };
+    }
 
-    document.getElementById('btn-import-saves').onclick = () => {
-      document.getElementById('import-saves-input').click();
-    };
-
-    document.getElementById('import-saves-input').onchange = async (e) => {
-      const files = e.target.files;
-      if (!files.length) return;
-
-      let imported = 0;
-      let failed = 0;
-
-      for (const file of files) {
-        try {
-          if (file.name.endsWith('.vnbackup')) {
-            // Import bundle of saves
-            const result = await saveManager.importAllSaves(file);
-            imported += result.imported;
-          } else if (file.name.endsWith('.vnsave')) {
-            // Import single save
-            await saveManager.importSaveFromFile(file);
-            imported++;
-          }
-        } catch (error) {
-          console.error('Import failed for', file.name, error);
-          failed++;
-        }
-      }
-
-      if (imported > 0) {
-        showFeedback(`Imported ${imported} save(s)${failed > 0 ? `, ${failed} failed` : ''}`);
-        // Refresh the current game's save list if a game is selected
-        if (selectedGameOnStart) {
-          loadStartSavesForGame(selectedGameOnStart.folder);
-        }
-      } else {
-        showFeedback('No saves imported', 'error');
-      }
-
-      // Reset file input
-      e.target.value = '';
-    };
-
-    // Auto-backup toggle
-    document.getElementById('auto-backup-toggle').onchange = (e) => {
-      saveManager.autoBackup = e.target.checked;
-      document.getElementById('auto-backup-status').textContent = e.target.checked ? 'Enabled' : 'Disabled';
-      localStorage.setItem('vn_auto_backup', e.target.checked);
-      showFeedback(e.target.checked ? 'Auto-backup enabled' : 'Auto-backup disabled', 'info');
-    };
-
-    // Load auto-backup preference
+    // Navigation and page setup
     const savedAutoBackup = localStorage.getItem('vn_auto_backup');
     if (savedAutoBackup !== null) {
       const enabled = savedAutoBackup === 'true';
@@ -883,10 +974,21 @@
           titleElement.onclick = () => showStartScreen();
         }
         
-        // Setup navigation handlers
+        // Setup navigation handlers and button states
         const btnHome = document.getElementById('btn-home');
+        const btnBuilder = document.getElementById('btn-builder');
+        
         if (btnHome) {
-          btnHome.onclick = () => showStartScreen();
+          btnHome.classList.add('primary'); // Highlight Library button on index page
+          // Simple click handler - always show start screen
+          btnHome.onclick = (e) => {
+            e.preventDefault();
+            showStartScreen();
+          };
+        }
+        
+        if (btnBuilder) {
+          btnBuilder.classList.remove('primary'); // Remove highlight from Builder button
         }
         
         const btnSave = document.getElementById('btn-save');
@@ -914,7 +1016,7 @@
     async function initializeApp() {
       await loadNavbar(); // Load navbar first
       await loadGamesList(); // Wait for games to load first
-      loadColors(); // Load saved theme colors
+      loadSettings(); // Load saved settings and theme colors
       showStartScreen(); // Then show start screen with games
       
       // Auto-run debug helper on load

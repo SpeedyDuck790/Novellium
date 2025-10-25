@@ -225,6 +225,44 @@ body {
   color: #ffd700;
 }
 
+/* Close button for builder settings panel */
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+}
+
+/* Slide menu header for builder */
+.slide-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.slide-menu-header h3 {
+  color: #ffd700;
+  font-size: 24px;
+  margin: 0;
+}
+
 /* Game cards bar at top of menu */
 .menu-games-bar {
   display: flex;
@@ -891,6 +929,17 @@ body {
 
 .settings-btn.import:hover {
   background: rgba(100, 150, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.settings-btn.help {
+  background: rgba(128, 0, 128, 0.2);
+  color: #bb86fc;
+  border: 2px solid #bb86fc;
+}
+
+.settings-btn.help:hover {
+  background: rgba(128, 0, 128, 0.4);
   transform: translateY(-2px);
 }
 
