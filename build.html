@@ -28,7 +28,7 @@
     }
 
     .builder-sidebar {
-      width: 250px;
+      width: 300px;
       background: rgba(0, 0, 0, 0.5);
       border-right: 2px solid rgba(255, 215, 0, 0.3);
       padding: 20px;
@@ -2974,19 +2974,37 @@
       // Documentation link handlers
       document.getElementById('btn-readme').onclick = (e) => {
         e.preventDefault();
-        window.open('docs/pdf-viewer.html?doc=README.md', '_blank');
+        // Create download link for README PDF
+        const link = document.createElement('a');
+        link.href = 'README.pdf';
+        link.download = 'Novellium-README.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         dropdown.classList.remove('active');
       };
       
       document.getElementById('btn-user-guide').onclick = (e) => {
         e.preventDefault();
-        window.open('docs/pdf-viewer.html?doc=docs/USER-GUIDE.md', '_blank');
+        // Create download link for User Guide PDF
+        const link = document.createElement('a');
+        link.href = 'docs/USER-GUIDE.pdf';
+        link.download = 'Novellium-User-Guide.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         dropdown.classList.remove('active');
       };
       
       document.getElementById('btn-game-format').onclick = (e) => {
         e.preventDefault();
-        window.open('docs/pdf-viewer.html?doc=docs/GAME-FORMAT.md', '_blank');
+        // Create download link for Game Format PDF
+        const link = document.createElement('a');
+        link.href = 'docs/GAME-FORMAT.pdf';
+        link.download = 'Novellium-Game-Format.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         dropdown.classList.remove('active');
       };
     });
