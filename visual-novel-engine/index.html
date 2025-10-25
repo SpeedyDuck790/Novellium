@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visual Novel Engine</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Novellium</title>
+  <link rel="stylesheet" href="styles.css?v=3.0">
   <style id="dynamic-theme">
     /* Dynamic theme colors applied via JavaScript */
   </style>
@@ -17,7 +17,7 @@
         <button id="btn-builder" class="nav-btn" onclick="window.location.href='build.html'">🔧 Builder</button>
       </div>
       <div class="nav-center">
-        <h3 id="current-game-title">Visual Novel Engine</h3>
+        <h3 id="current-game-title">Novellium</h3>
       </div>
       <div class="nav-right">
         <button id="btn-save" class="nav-btn">💾 Save</button>
@@ -116,56 +116,7 @@
     <div id="feedback-toast" class="feedback-toast"></div>
     
     <div id="game-container" class="game-container">
-      <div id="start-screen" class="start-screen">
-        <!-- Left sidebar with game list -->
-        <div class="games-sidebar" id="games-sidebar">
-          <div class="sidebar-header">
-            <h2>📚 Games Library</h2>
-          </div>
-          <div class="games-list-vertical" id="games-list-vertical">
-            <!-- Games will be populated here -->
-          </div>
-        </div>
-        
-        <!-- Right content area -->
-        <div class="content-area" id="content-area">
-          <!-- Default welcome content -->
-          <div class="welcome-content" id="welcome-content">
-            <h1>Welcome to Visual Novel Engine</h1>
-            <div class="welcome-text">
-              <p>🎮 A modern, customizable visual novel engine built with vanilla JavaScript</p>
-              <h3>Features:</h3>
-              <ul>
-                <li>📖 Rich storytelling with branching narratives</li>
-                <li>💾 Multiple save slots per game</li>
-                <li>🎨 Customizable UI themes and colors</li>
-                <li>🖼️ Support for backgrounds, characters, and sprites</li>
-                <li>⚙️ Easy-to-use configuration system</li>
-                <li>🎭 Character-based dialogue system</li>
-              </ul>
-              <p class="select-prompt">← Select a game from the library to get started</p>
-            </div>
-          </div>
-          
-          <!-- Game options panel (shown when game selected) -->
-          <div class="game-options-panel" id="game-options-panel" style="display: none;">
-            <div class="game-options-header">
-              <h2 id="selected-game-title">Game Title</h2>
-              <p id="selected-game-description">Game description</p>
-            </div>
-            <div class="game-options-content">
-              <button id="btn-play-new" class="game-action-btn new-game">▶ Start New Game</button>
-              
-              <div class="saves-section">
-                <h3>💾 Load Saved Game</h3>
-                <div id="start-saves-list" class="saves-list-vertical">
-                  <p class="no-saves">No saves available for this game</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Start screen will be loaded by JavaScript -->
     </div>
   </div>
 
@@ -557,7 +508,8 @@
           <!-- Left sidebar with game list -->
           <div class="games-sidebar" id="games-sidebar">
             <div class="sidebar-header">
-              <h2>📚 Games Library</h2>
+              <h2>📚 Novellium Library</h2>
+              <p class="library-subtitle">Unlimited Stories Await</p>
             </div>
             <div class="games-list-vertical" id="games-list-vertical">
               <!-- Games will be populated here -->
@@ -568,19 +520,60 @@
           <div class="content-area" id="content-area">
             <!-- Default welcome content -->
             <div class="welcome-content" id="welcome-content">
-              <h1>Welcome to Visual Novel Engine</h1>
-              <div class="welcome-text">
-                <p>🎮 A modern, customizable visual novel engine built with vanilla JavaScript</p>
-                <h3>Features:</h3>
-                <ul>
-                  <li>📖 Rich storytelling with branching narratives</li>
-                  <li>💾 Multiple save slots per game</li>
-                  <li>🎨 Customizable UI themes and colors</li>
-                  <li>🖼️ Support for backgrounds, characters, and sprites</li>
-                  <li>⚙️ Easy-to-use configuration system</li>
-                  <li>🎭 Character-based dialogue system</li>
-                </ul>
-                <p class="select-prompt">← Select a game from the library to get started</p>
+              <div class="hero-section">
+                <h1 class="hero-title">Welcome to <span class="brand-gradient">Novellium</span></h1>
+                <p class="hero-subtitle">Where Stories Come Alive</p>
+              </div>
+
+              <div class="platform-vision">
+                <div class="vision-card player-card">
+                  <div class="card-icon">🎮</div>
+                  <h2>For Players</h2>
+                  <p class="card-tagline">"Netflix for Visual Novels"</p>
+                  <ul class="feature-list">
+                    <li><strong>Instant Access</strong> - Click and play from a curated library</li>
+                    <li><strong>Zero Setup</strong> - No downloads or installations required</li>
+                    <li><strong>Cloud Saves</strong> - Your progress follows you everywhere</li>
+                    <li><strong>Personalized</strong> - Customize themes and UI to your taste</li>
+                    <li><strong>Unlimited Stories</strong> - One subscription, endless adventures</li>
+                  </ul>
+                </div>
+
+                <div class="vision-card creator-card">
+                  <div class="card-icon">📝</div>
+                  <h2>For Creators</h2>
+                  <p class="card-tagline">"WordPress for Interactive Stories"</p>
+                  <ul class="feature-list">
+                    <li><strong>Zero-Code</strong> - Write stories, not programs</li>
+                    <li><strong>Instant Publishing</strong> - Deploy directly to the platform</li>
+                    <li><strong>Professional Results</strong> - Rich features built-in automatically</li>
+                    <li><strong>Revenue Share</strong> - Earn from your creativity</li>
+                    <li><strong>Tap the Audience</strong> - Access existing player base</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="value-proposition">
+                <h3>🌟 A Two-Sided Marketplace for Interactive Fiction</h3>
+                <div class="value-grid">
+                  <div class="value-item">
+                    <strong>Players</strong> pay once, access everything
+                  </div>
+                  <div class="value-item">
+                    <strong>Creators</strong> focus on storytelling, earn revenue
+                  </div>
+                  <div class="value-item">
+                    <strong>Quality</strong> rises through engagement
+                  </div>
+                  <div class="value-item">
+                    <strong>Community</strong> grows by network effects
+                  </div>
+                </div>
+              </div>
+
+              <div class="cta-section">
+                <p class="cta-prompt">← Select a game to start playing</p>
+                <p class="cta-prompt">Or <a href="build.html" class="inline-link">create your own story</a> →</p>
               </div>
             </div>
             
@@ -605,7 +598,7 @@
         </div>
       `;
       
-      document.getElementById('current-game-title').textContent = 'Visual Novel Engine';
+      document.getElementById('current-game-title').textContent = 'Novellium';
       populateGamesCarousel();
       selectedGameOnStart = null;
       currentGame = null;
@@ -912,12 +905,17 @@
     };
 
     // Initialize application
-    loadColors(); // Load saved theme colors
-    loadGamesList();
+    async function initializeApp() {
+      await loadGamesList(); // Wait for games to load first
+      loadColors(); // Load saved theme colors
+      showStartScreen(); // Then show start screen with games
+      
+      // Auto-run debug helper on load
+      console.log('Type viewAllSaves() in console to see all saved games');
+      viewAllSaves();
+    }
     
-    // Auto-run debug helper on load
-    console.log('Type viewAllSaves() in console to see all saved games');
-    viewAllSaves();
+    initializeApp();
   </script>
 </body>
 </html>

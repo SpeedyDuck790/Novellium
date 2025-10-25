@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visual Novel Builder</title>
+  <title>Novellium Builder</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
@@ -387,7 +387,7 @@
             <label>JSON Editor</label>
           </div>
           <button class="btn btn-primary" id="btn-save-project">💾 Save Project</button>
-          <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 Back to Engine</button>
+          <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 Back to Library</button>
         </div>
       </div>
 
@@ -670,7 +670,7 @@
               <li>Go to "📥 Import & Deploy" tab to upload and deploy</li>
               <li>Or manually extract and place in <code>gamefolder/[your-game-id]/</code></li>
               <li>Update <code>games-list.json</code> to include your game</li>
-              <li>Test in the Visual Novel Engine!</li>
+              <li>Test in Novellium!</li>
             </ol>
           </div>
         </div>
@@ -678,8 +678,8 @@
         <!-- Import & Deploy Section -->
         <div class="builder-section" id="section-import">
           <div class="section-header">
-            <h2>📥 Import & Deploy to Engine</h2>
-            <p>Upload a game package and deploy it to the Visual Novel Engine</p>
+            <h2>📥 Import & Deploy to Library</h2>
+            <p>Upload a game package and deploy it to Novellium</p>
           </div>
 
           <div class="event-builder">
@@ -693,7 +693,7 @@
             </div>
 
             <button class="btn btn-primary" id="btn-import-and-deploy" style="display: block; width: 100%; background: linear-gradient(135deg, #00d4ff, #0099ff);">
-              🚀 Import & Deploy to Engine
+              🚀 Import & Deploy to Library
             </button>
 
             <div id="import-status" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;">
@@ -1668,7 +1668,7 @@
         statusDiv.style.borderLeft = '4px solid #00ff00';
         statusDiv.innerHTML = `
           <h4 style="color: #00ff00; margin: 0 0 10px 0;">✅ Deployment Successful!</h4>
-          <p style="color: #ccc; margin: 0;">Your game has been added to the Visual Novel Engine.</p>
+          <p style="color: #ccc; margin: 0;">Your game has been added to Novellium.</p>
           <p style="color: #ccc; margin: 10px 0 0 0;">
             <strong>Game ID:</strong> ${gameId}<br>
             <strong>Title:</strong> ${project.info.title}<br>
@@ -1677,7 +1677,7 @@
             <strong>Assets:</strong> ${assetCount}
           </p>
           <button class="btn btn-primary" onclick="window.location.href='index.html'" style="margin-top: 15px; width: 100%;">
-            🎮 Go to Engine and Play
+            🎮 Go to Library and Play
           </button>
         `;
 
