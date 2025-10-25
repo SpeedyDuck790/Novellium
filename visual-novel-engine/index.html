@@ -17,30 +17,70 @@
       </div>
       <div class="nav-right">
         <button id="btn-save" class="nav-btn">💾 Save</button>
-        <button id="btn-menu" class="nav-btn">⚙️ Menu</button>
+        <button id="btn-menu" class="nav-btn">⚙️ Settings</button>
       </div>
     </nav>
     
-    <!-- New expandable game menu -->
+    <!-- Settings panel (right side) -->
     <div id="slide-menu" class="slide-menu">
       <div class="menu-header">
-        <h3>Games & Saves</h3>
+        <h3>⚙️ Settings</h3>
         <button id="close-menu" class="close-btn">✕</button>
       </div>
       
-      <!-- Game cards at top -->
-      <div class="menu-games-bar" id="menu-games-bar">
-        <!-- Game cards will be populated here -->
-      </div>
-      
-      <!-- Expandable saves section -->
-      <div class="menu-saves-section" id="menu-saves-section" style="display: none;">
-        <div class="saves-header">
-          <h4 id="selected-game-title">Select a game above</h4>
-          <button id="btn-new-save" class="new-save-btn" style="display: none;">➕ New Save</button>
+      <!-- Settings content -->
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4>UI Colors</h4>
+          
+          <div class="setting-item">
+            <label for="primary-color">Primary Color:</label>
+            <input type="color" id="primary-color" value="#ffd700">
+            <span class="color-preview" id="primary-preview">#ffd700</span>
+          </div>
+          
+          <div class="setting-item">
+            <label for="secondary-color">Secondary Color:</label>
+            <input type="color" id="secondary-color" value="#ff6b6b">
+            <span class="color-preview" id="secondary-preview">#ff6b6b</span>
+          </div>
+          
+          <div class="setting-item">
+            <label for="background-color">Background Color:</label>
+            <input type="color" id="background-color" value="#1a1a2e">
+            <span class="color-preview" id="background-preview">#1a1a2e</span>
+          </div>
+          
+          <div class="setting-item">
+            <label for="text-color">Text Color:</label>
+            <input type="color" id="text-color" value="#ffffff">
+            <span class="color-preview" id="text-preview">#ffffff</span>
+          </div>
+          
+          <div class="setting-item">
+            <label for="dialogue-bg-color">Dialogue Box Background:</label>
+            <input type="color" id="dialogue-bg-color" value="#000000">
+            <span class="color-preview" id="dialogue-bg-preview">#000000</span>
+            <input type="range" id="dialogue-bg-opacity" min="0" max="100" value="80">
+            <span class="opacity-label">Opacity: <span id="dialogue-opacity-value">80</span>%</span>
+          </div>
+          
+          <div class="setting-item">
+            <label for="button-color">Button Color:</label>
+            <input type="color" id="button-color" value="#ffd700">
+            <span class="color-preview" id="button-preview">#ffd700</span>
+          </div>
+          
+          <div class="setting-item">
+            <label for="button-hover-color">Button Hover Color:</label>
+            <input type="color" id="button-hover-color" value="#ffed4e">
+            <span class="color-preview" id="button-hover-preview">#ffed4e</span>
+          </div>
         </div>
-        <div id="menu-saves-list" class="saves-list">
-          <p class="no-selection">Select a game to view saves</p>
+        
+        <div class="settings-actions">
+          <button id="btn-reset-colors" class="settings-btn reset">🔄 Reset to Default</button>
+          <button id="btn-apply-colors" class="settings-btn apply">✓ Apply Colors</button>
         </div>
       </div>
     </div>
@@ -477,17 +517,100 @@
       document.getElementById('slide-menu').classList.remove('open');
     };
     
-    // New save button in menu
-    document.getElementById('btn-new-save').onclick = () => {
-      if (selectedGameForSaves) {
-        const saveName = prompt('Save name:', `${selectedGameForSaves.title}_${new Date().toLocaleDateString().replace(/\//g, '_')}`);
-        if (saveName) {
-          // Note: This creates a placeholder - actual save needs active game
-          showFeedback('Start the game first to create a save', 'info');
-        }
-      }
+    // Settings functionality
+    const defaultColors = {
+      primary: '#ffd700',
+      secondary: '#ff6b6b',
+      background: '#1a1a2e',
+      text: '#ffffff',
+      dialogueBg: '#000000',
+      dialogueOpacity: 80,
+      button: '#ffd700',
+      buttonHover: '#ffed4e'
     };
-
+    
+    // Load saved colors from localStorage
+    function loadColors() {
+      const saved = localStorage.getItem('vn_theme_colors');
+      if (saved) {
+        const colors = JSON.parse(saved);
+        document.getElementById('primary-color').value = colors.primary;
+        document.getElementById('secondary-color').value = colors.secondary;
+        document.getElementById('background-color').value = colors.background;
+        document.getElementById('text-color').value = colors.text;
+        document.getElementById('dialogue-bg-color').value = colors.dialogueBg;
+        document.getElementById('dialogue-bg-opacity').value = colors.dialogueOpacity;
+        document.getElementById('button-color').value = colors.button;
+        document.getElementById('button-hover-color').value = colors.buttonHover;
+        updateColorPreviews();
+        applyColors(colors);
+      }
+    }
+    
+    // Update color preview labels
+    function updateColorPreviews() {
+      document.getElementById('primary-preview').textContent = document.getElementById('primary-color').value;
+      document.getElementById('secondary-preview').textContent = document.getElementById('secondary-color').value;
+      document.getElementById('background-preview').textContent = document.getElementById('background-color').value;
+      document.getElementById('text-preview').textContent = document.getElementById('text-color').value;
+      document.getElementById('dialogue-bg-preview').textContent = document.getElementById('dialogue-bg-color').value;
+      document.getElementById('button-preview').textContent = document.getElementById('button-color').value;
+      document.getElementById('button-hover-preview').textContent = document.getElementById('button-hover-color').value;
+      document.getElementById('dialogue-opacity-value').textContent = document.getElementById('dialogue-bg-opacity').value;
+    }
+    
+    // Apply colors to CSS variables
+    function applyColors(colors) {
+      document.documentElement.style.setProperty('--primary-color', colors.primary);
+      document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+      document.documentElement.style.setProperty('--background-color', colors.background);
+      document.documentElement.style.setProperty('--text-color', colors.text);
+      document.documentElement.style.setProperty('--dialogue-bg-color', colors.dialogueBg);
+      document.documentElement.style.setProperty('--dialogue-bg-opacity', colors.dialogueOpacity / 100);
+      document.documentElement.style.setProperty('--button-color', colors.button);
+      document.documentElement.style.setProperty('--button-hover-color', colors.buttonHover);
+    }
+    
+    // Color input change listeners
+    document.querySelectorAll('input[type="color"], input[type="range"]').forEach(input => {
+      input.addEventListener('input', updateColorPreviews);
+    });
+    
+    // Apply colors button
+    document.getElementById('btn-apply-colors').onclick = () => {
+      const colors = {
+        primary: document.getElementById('primary-color').value,
+        secondary: document.getElementById('secondary-color').value,
+        background: document.getElementById('background-color').value,
+        text: document.getElementById('text-color').value,
+        dialogueBg: document.getElementById('dialogue-bg-color').value,
+        dialogueOpacity: parseInt(document.getElementById('dialogue-bg-opacity').value),
+        button: document.getElementById('button-color').value,
+        buttonHover: document.getElementById('button-hover-color').value
+      };
+      
+      applyColors(colors);
+      localStorage.setItem('vn_theme_colors', JSON.stringify(colors));
+      showFeedback('Colors applied!');
+      document.getElementById('slide-menu').classList.remove('open');
+    };
+    
+    // Reset colors button
+    document.getElementById('btn-reset-colors').onclick = () => {
+      document.getElementById('primary-color').value = defaultColors.primary;
+      document.getElementById('secondary-color').value = defaultColors.secondary;
+      document.getElementById('background-color').value = defaultColors.background;
+      document.getElementById('text-color').value = defaultColors.text;
+      document.getElementById('dialogue-bg-color').value = defaultColors.dialogueBg;
+      document.getElementById('dialogue-bg-opacity').value = defaultColors.dialogueOpacity;
+      document.getElementById('button-color').value = defaultColors.button;
+      document.getElementById('button-hover-color').value = defaultColors.buttonHover;
+      updateColorPreviews();
+      applyColors(defaultColors);
+      localStorage.removeItem('vn_theme_colors');
+      showFeedback('Reset to default colors');
+    };
+    
     // Close menu when clicking outside
     document.addEventListener('click', function(event) {
       const menu = document.getElementById('slide-menu');
@@ -499,6 +622,7 @@
     });
 
     // Initialize application
+    loadColors(); // Load saved theme colors
     loadGamesList();
   </script>
 </body>
