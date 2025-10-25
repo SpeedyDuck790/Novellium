@@ -1,0 +1,30 @@
+{
+  "characters": {
+    "alice": {
+      "name": "Alice",
+      "sprites": {
+        "neutral": "sprites/girlhappy.jpg",
+        "happy": "sprites/girlhappy.jpg",
+        "sad": "sprites/girlmad.jpg"
+      },
+      "details": {
+        "likes": ["reading", "tea"],
+        "dislikes": ["loud noises"],
+        "personality": "quiet and thoughtful"
+      }
+    },
+    "bob": {
+      "name": "Bob",
+      "sprites": {
+        "neutral": "sprites/girl2happy.jpg",
+        "excited": "sprites/girl2happy.jpg",
+        "confused": "sprites/girl2happy.jpg"
+      },
+      "details": {
+        "likes": ["adventure", "music"],
+        "dislikes": ["sitting still"],
+        "personality": "energetic and outgoing"
+      }
+    }
+  }
+}

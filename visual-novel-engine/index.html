@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Novel Engine</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <nav class="navbar">
+      <button id="btn-restart">Restart</button>
+      <button id="btn-save">Save</button>
+      <button id="btn-load">Load</button>
+      <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
+      <button id="btn-load-game">Load Game Folder</button>
+    </nav>
+    
+    <div id="game-container" class="game-container"></div>
+  </div>
+
+  <script type="module">
+    import { VisualNovelEngine } from './src/engine.js';
+
+    const engine = new VisualNovelEngine(document.getElementById('game-container'));
+    
+    // Auto-load default game (for testing)
+    engine.loadGame('./game-data');
+
+    document.getElementById('btn-restart').onclick = () => engine.restartGame();
+    document.getElementById('btn-save').onclick = () => engine.saveGame('manual_save');
+    document.getElementById('btn-load').onclick = () => engine.loadSave('manual_save');
+    
+    document.getElementById('btn-load-game').onclick = () => {
+      document.getElementById('folder-input').click();
+    };
+
+    document.getElementById('folder-input').onchange = async (e) => {
+      const files = Array.from(e.target.files);
+      // Handle folder loading logic here
+      console.log('Folder selected:', files);
+    };
+  </script>
+</body>
+</html>

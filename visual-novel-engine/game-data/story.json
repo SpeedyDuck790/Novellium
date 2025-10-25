@@ -1,0 +1,248 @@
+{
+  "events": {
+    "intro": {
+      "name": "Introduction",
+      "type": "dialogue",
+      "background": "backgrounds/park-with-wooden-pathway-benches.jpg",
+      "character": {
+        "id": "alice",
+        "sprite": "neutral",
+        "position": "center"
+      },
+      "dialogue": "Welcome to this demo visual novel! I'm Alice, and I'll be your guide today.",
+      "choices": [
+        {
+          "text": "Nice to meet you, Alice!",
+          "nextEvent": "alice_happy",
+          "setFlags": {
+            "met_alice": true,
+            "alice_mood": "happy"
+          }
+        },
+        {
+          "text": "Who are you exactly?",
+          "nextEvent": "alice_explains",
+          "setFlags": {
+            "met_alice": true,
+            "alice_mood": "neutral"
+          }
+        }
+      ]
+    },
+    "alice_happy": {
+      "name": "Alice is Happy",
+      "type": "dialogue",
+      "background": "backgrounds/park-with-wooden-pathway-benches.jpg",
+      "character": {
+        "id": "alice",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "Thank you! It's wonderful to meet you too. Would you like to explore this magical forest with me?",
+      "choices": [
+        {
+          "text": "Yes, let's explore!",
+          "nextEvent": "forest_exploration",
+          "setFlags": {
+            "exploring": true
+          }
+        },
+        {
+          "text": "Maybe later.",
+          "nextEvent": "meet_bob"
+        }
+      ]
+    },
+    "alice_explains": {
+      "name": "Alice Explains",
+      "type": "dialogue",
+      "background": "backgrounds/park-with-wooden-pathway-benches.jpg",
+      "character": {
+        "id": "alice",
+        "sprite": "neutral",
+        "position": "center"
+      },
+      "dialogue": "I'm a character in this demo visual novel engine. I exist to show you how the system works with conditional dialogue and choices.",
+      "choices": [
+        {
+          "text": "That's fascinating!",
+          "nextEvent": "alice_happy",
+          "setFlags": {
+            "alice_mood": "happy"
+          }
+        },
+        {
+          "text": "Let's meet someone else.",
+          "nextEvent": "meet_bob"
+        }
+      ]
+    },
+    "meet_bob": {
+      "name": "Meet Bob",
+      "type": "dialogue",
+      "background": "backgrounds/room.jpg",
+      "character": {
+        "id": "bob",
+        "sprite": "excited",
+        "position": "left"
+      },
+      "dialogue": "Hey there! I'm Bob! I heard you might be looking for an adventure!",
+      "choices": [
+        {
+          "text": "What kind of adventure?",
+          "nextEvent": "bob_adventure",
+          "setFlags": {
+            "met_bob": true
+          }
+        },
+        {
+          "text": "I'm not really the adventurous type...",
+          "nextEvent": "bob_confused",
+          "setFlags": {
+            "met_bob": true,
+            "bob_mood": "confused"
+          }
+        }
+      ]
+    },
+    "forest_exploration": {
+      "name": "Forest Exploration",
+      "type": "dialogue",
+      "background": "backgrounds/abstract-uv-ultraviolet-light-composition.jpg",
+      "character": {
+        "id": "alice",
+        "sprite": "happy",
+        "position": "right"
+      },
+      "dialogue": {
+        "default": "This forest holds many secrets. What would you like to do?",
+        "conditional": [
+          {
+            "conditions": {
+              "met_bob": true
+            },
+            "text": "Since you've met Bob, perhaps you'd like to invite him on our forest adventure?"
+          }
+        ]
+      },
+      "choices": [
+        {
+          "text": "Look for magical creatures",
+          "nextEvent": "ending_magic"
+        },
+        {
+          "text": "Search for treasure",
+          "nextEvent": "ending_treasure"
+        },
+        {
+          "text": "Call Bob to join us",
+          "nextEvent": "group_adventure",
+          "conditions": {
+            "met_bob": true
+          }
+        }
+      ]
+    },
+    "bob_adventure": {
+      "name": "Bob's Adventure",
+      "type": "dialogue",
+      "background": "backgrounds/room.jpg",
+      "character": {
+        "id": "bob",
+        "sprite": "excited",
+        "position": "center"
+      },
+      "dialogue": "We could go treasure hunting, or explore mysterious caves, or even climb the tallest mountain!",
+      "choices": [
+        {
+          "text": "Treasure hunting sounds great!",
+          "nextEvent": "ending_treasure"
+        },
+        {
+          "text": "Let's go back to Alice first.",
+          "nextEvent": "forest_exploration",
+          "conditions": {
+            "met_alice": true
+          }
+        }
+      ]
+    },
+    "bob_confused": {
+      "name": "Bob is Confused",
+      "type": "dialogue",
+      "background": "backgrounds/room.jpg",
+      "character": {
+        "id": "bob",
+        "sprite": "confused",
+        "position": "center"
+      },
+      "dialogue": "Oh... well, that's okay too! Maybe you'd prefer something quieter?",
+      "choices": [
+        {
+          "text": "Actually, adventure might be fun.",
+          "nextEvent": "bob_adventure"
+        },
+        {
+          "text": "Let's go back to the forest.",
+          "nextEvent": "forest_exploration",
+          "conditions": {
+            "exploring": true
+          }
+        }
+      ]
+    },
+    "group_adventure": {
+      "name": "Group Adventure",
+      "type": "dialogue",
+      "background": "backgrounds/abstract-uv-ultraviolet-light-composition.jpg",
+      "dialogue": "Alice and Bob join forces for an epic adventure! Together, you discover amazing things in the forest.",
+      "choices": [
+        {
+          "text": "What a great ending!",
+          "nextEvent": "ending_friendship"
+        }
+      ]
+    },
+    "ending_magic": {
+      "name": "Magical Ending",
+      "type": "dialogue",
+      "background": "backgrounds/abstract-uv-ultraviolet-light-composition.jpg",
+      "character": {
+        "id": "alice",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "You discovered a grove full of magical creatures! They grant you a wish for being so kind. What an enchanting adventure!",
+      "choices": [
+        {
+          "text": "Start over",
+          "nextEvent": "intro"
+        }
+      ]
+    },
+    "ending_treasure": {
+      "name": "Treasure Ending",
+      "type": "dialogue",
+      "background": "backgrounds/room.jpg",
+      "dialogue": "You found an ancient treasure chest filled with gold and gems! Your adventure was definitely worth it!",
+      "choices": [
+        {
+          "text": "Start over",
+          "nextEvent": "intro"
+        }
+      ]
+    },
+    "ending_friendship": {
+      "name": "Friendship Ending",
+      "type": "dialogue",
+      "background": "backgrounds/park-with-wooden-pathway-benches.jpg",
+      "dialogue": "The greatest treasure of all was the friendship you made along the way. Alice and Bob will remember this adventure forever!",
+      "choices": [
+        {
+          "text": "Start over",
+          "nextEvent": "intro"
+        }
+      ]
+    }
+  }
+}
