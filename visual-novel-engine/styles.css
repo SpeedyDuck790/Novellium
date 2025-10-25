@@ -828,6 +828,104 @@ body {
   transform: translateY(-2px);
 }
 
+/* Save Management Styles */
+.setting-description {
+  color: #999;
+  font-size: 12px;
+  margin: 5px 0 10px 0;
+  line-height: 1.4;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.settings-btn.export {
+  flex: 1;
+  background: rgba(100, 200, 100, 0.2);
+  color: #6de56d;
+  border: 2px solid #6de56d;
+}
+
+.settings-btn.export:hover {
+  background: rgba(100, 200, 100, 0.4);
+  transform: translateY(-2px);
+}
+
+.settings-btn.import {
+  flex: 1;
+  background: rgba(100, 150, 255, 0.2);
+  color: #6daeff;
+  border: 2px solid #6daeff;
+}
+
+.settings-btn.import:hover {
+  background: rgba(100, 150, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: 0.3s;
+  border-radius: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: rgba(255, 215, 0, 0.4);
+  border-color: #ffd700;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+  background-color: #ffd700;
+}
+
+.status-text {
+  color: #999;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+input:checked ~ .status-text {
+  color: #ffd700;
+}
+
 /* CSS Variables for theming */
 :root {
   --primary-color: #ffd700;

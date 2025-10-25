@@ -133,8 +133,8 @@ export class VisualNovelEngine {
     this.renderCurrentEvent();
   }
 
-  saveGame(slotName = 'autosave') {
-    this.saveManager.save(slotName, this.gameState, this.currentGameFolder);
+  async saveGame(slotName = 'autosave') {
+    await this.saveManager.save(slotName, this.gameState, this.currentGameFolder);
   }
 
   async loadSave(slotName = 'autosave') {
