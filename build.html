@@ -1681,6 +1681,14 @@
           const configFile = contents.file('config.json');
           if (!configFile) throw new Error('config.json not found in ZIP');
           config = JSON.parse(await configFile.async('string'));
+          
+          // Debug: Log the config structure
+          console.log('Loaded config:', config);
+          
+          // Validate that we have at least a title/name
+          if (!config.title && !config.name) {
+            throw new Error('Config file missing title/name field');
+          }
         } catch (e) {
           throw new Error('Failed to load config.json: ' + e.message);
         }
@@ -1723,16 +1731,19 @@
         }
 
         // Generate game ID from title if not present
-        const gameId = config.gameId || config.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const title = config.title || config.name || 'Untitled Game';
+        const author = config.author || 'Unknown Author';
+        const initialEvent = config.initialEvent || config.startEvent || 'start';
+        const gameId = config.gameId || config.id || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
         // Create project data structure
         const importedProject = {
           info: {
-            title: config.title,
+            title: title,
             id: gameId,
             description: config.description || '',
-            author: config.author || '',
-            initialEvent: config.initialEvent || config.startEvent || 'start'
+            author: author,
+            initialEvent: initialEvent
           },
           characters: Object.entries(characters).map(([id, data]) => ({
             id: id,
