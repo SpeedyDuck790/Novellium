@@ -93,42 +93,38 @@ export class VisualNovelEngine {
         this.events.set(id, new Event(id, data));
       }
 
-      // Create cloud asset loader
+      // Create cloud asset loader that works with direct URLs in events/characters
       this.assetLoader = {
-        async loadImage(filename) {
-          // Find asset in cloud game data
-          const asset = gameData.assets?.find(a => 
-            a.asset_name === filename && 
-            (a.asset_type === 'background' || a.asset_type === 'sprite')
-          );
-          
-          if (asset) {
-            return new Promise((resolve, reject) => {
-              const img = new Image();
-              img.onload = () => resolve(img);
-              img.onerror = reject;
-              img.src = asset.file_path;
-            });
-          }
-          
-          throw new Error(`Cloud asset not found: ${filename}`);
+        async loadImage(imagePath) {
+          // For cloud games, imagePath might be a direct URL or a filename
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error(`Failed to load image: ${imagePath}`));
+            
+            // If it's already a full URL (from Supabase Storage), use it directly
+            if (imagePath.startsWith('http')) {
+              img.src = imagePath;
+            } else {
+              // If it's just a filename, we can't resolve it for cloud games
+              reject(new Error(`Cloud asset filename not resolvable: ${imagePath}`));
+            }
+          });
         },
         
-        async loadAudio(filename) {
-          const asset = gameData.assets?.find(a => 
-            a.asset_name === filename && 
-            (a.asset_type === 'audio' || a.asset_type === 'music')
-          );
-          
-          if (asset) {
-            return new Promise((resolve, reject) => {
-              const audio = new Audio(asset.file_path);
-              audio.oncanplaythrough = () => resolve(audio);
-              audio.onerror = reject;
-            });
-          }
-          
-          throw new Error(`Cloud audio not found: ${filename}`);
+        async loadAudio(audioPath) {
+          return new Promise((resolve, reject) => {
+            const audio = new Audio();
+            audio.oncanplaythrough = () => resolve(audio);
+            audio.onerror = () => reject(new Error(`Failed to load audio: ${audioPath}`));
+            
+            // If it's already a full URL (from Supabase Storage), use it directly
+            if (audioPath.startsWith('http')) {
+              audio.src = audioPath;
+            } else {
+              reject(new Error(`Cloud audio filename not resolvable: ${audioPath}`));
+            }
+          });
         },
         
         async loadJSON(filename) {

@@ -2011,6 +2011,19 @@
           }
         });
         
+        statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Generating thumbnail...</p>';
+        
+        // Generate thumbnail from first background image
+        let thumbnailUrl = null;
+        const firstEventWithBackground = project.events.find(event => event.background);
+        if (firstEventWithBackground) {
+          const backgroundFilename = firstEventWithBackground.background.split('/').pop();
+          if (uploadedAssetUrls[backgroundFilename]) {
+            // Use the uploaded background as thumbnail
+            thumbnailUrl = uploadedAssetUrls[backgroundFilename];
+          }
+        }
+        
         statusDiv.innerHTML = '<p style="color: #ffa500; margin: 0;">⏳ Uploading game to cloud database...</p>';
         
         // Upload game to Supabase database
@@ -2019,6 +2032,7 @@
           author: project.info.author,
           description: project.info.description,
           game_id: gameId,
+          thumbnail_url: thumbnailUrl,
           config: {
             title: project.info.title,
             author: project.info.author,
