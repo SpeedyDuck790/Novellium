@@ -453,111 +453,39 @@
           </div>
 
           <div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 10px; line-height: 1.8;">
-            <h3 style="color: #ffd700; margin-top: 0;">🎯 Engine Overview</h3>
-            <p>Novellium is an event-driven visual novel engine. Your story flows through <strong>Events</strong> that display text, show characters, play dialogue, and offer choices.</p>
+            <h3 style="color: #ffd700; margin-top: 0;">📚 Comprehensive Documentation Available</h3>
+            <p>Novellium now has complete documentation covering all aspects of game development with our engine.</p>
 
-            <h3 style="color: #ffd700; margin-top: 30px;">📖 Story Events</h3>
-            <p>Events are the core building blocks of your story. Each event has:</p>
-            <ul style="margin-left: 20px;">
-              <li><strong>ID</strong> - Unique identifier (e.g., "start", "chapter1", "ending_good")</li>
-              <li><strong>Type</strong> - Controls what the event does:
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                  <li><code>dialogue</code> - Display text with a speaking character</li>
-                  <li><code>narration</code> - Display text without a character (narrator voice)</li>
-                  <li><code>choice</code> - Present player with multiple options</li>
-                </ul>
-              </li>
-              <li><strong>Text</strong> - The dialogue or narration content</li>
-              <li><strong>Character</strong> - Which character is speaking (for dialogue events)</li>
-              <li><strong>Background</strong> - The scene background image</li>
-              <li><strong>Next Event</strong> - Which event plays after this one</li>
-            </ul>
-
-            <h3 style="color: #ffd700; margin-top: 30px;">👤 Characters</h3>
-            <p>Characters represent people in your story. Each character needs:</p>
-            <ul style="margin-left: 20px;">
-              <li><strong>ID</strong> - Unique identifier (e.g., "alex", "narrator")</li>
-              <li><strong>Name</strong> - Display name shown in dialogue boxes</li>
-              <li><strong>Color</strong> - Hex color for their name/text (e.g., #ff6b6b)</li>
-              <li><strong>Sprites</strong> - Character images for different emotions:
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                  <li><code>default</code> - Normal expression (required)</li>
-                  <li><code>happy</code>, <code>sad</code>, <code>angry</code> - Optional emotions</li>
-                  <li>Use format: <code>characterId.emotion</code> in events (e.g., "alex.happy")</li>
-                </ul>
-              </li>
-            </ul>
-
-            <h3 style="color: #ffd700; margin-top: 30px;">🔀 Branching & Choices</h3>
-            <p>Create interactive stories with choice events:</p>
-            <ul style="margin-left: 20px;">
-              <li>Set event type to <code>choice</code></li>
-              <li>Add 2+ choices with text and next event ID</li>
-              <li>Each choice can lead to different story paths</li>
-              <li>Track player decisions in variables for later use</li>
-            </ul>
-
-            <h3 style="color: #ffd700; margin-top: 30px;">🖼️ Assets</h3>
-            <p>Upload images to use in your game:</p>
-            <ul style="margin-left: 20px;">
-              <li><strong>Backgrounds</strong> - Scene images (e.g., "classroom.jpg")</li>
-              <li><strong>Sprites</strong> - Character images (e.g., "alex_happy.png")</li>
-              <li>Supported: PNG, JPG, GIF, WebP</li>
-              <li>Assets are stored in IndexedDB (unlimited storage)</li>
-              <li>Reference assets by filename in events</li>
-            </ul>
-
-            <h3 style="color: #ffd700; margin-top: 30px;">💾 Variables & Conditions</h3>
-            <p>Store game state and create conditional logic:</p>
-            <ul style="margin-left: 20px;">
-              <li>Use <code>setVariable</code> action to save values</li>
-              <li>Check variables with conditions: <code>variable:score > 10</code></li>
-              <li>Common patterns:
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                  <li>Relationship points: <code>variable:alex_love += 1</code></li>
-                  <li>Story flags: <code>variable:found_key = true</code></li>
-                  <li>Branching: Check conditions to show different events</li>
-                </ul>
-              </li>
-            </ul>
-
-            <h3 style="color: #ffd700; margin-top: 30px;">📦 Export & Deploy</h3>
-            <p>When your game is ready:</p>
-            <ol style="margin-left: 20px;">
-              <li>Click <strong>Export/Build</strong> to download your game as a ZIP</li>
-              <li>ZIP contains: game.json (data) + all uploaded assets</li>
-              <li>Use <strong>Import & Deploy</strong> to test in the Novellium Library</li>
-              <li>Share your ZIP file with players or host on your website</li>
-            </ol>
-
-            <h3 style="color: #ffd700; margin-top: 30px;">🚀 Quick Start Workflow</h3>
-            <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; border-left: 4px solid #ffd700; margin-top: 15px;">
-              <ol style="margin: 0; padding-left: 20px;">
-                <li>Fill out <strong>Project Info</strong> (title, ID, author)</li>
-                <li>Create characters in <strong>Characters</strong> section</li>
-                <li>Upload backgrounds/sprites in <strong>Assets</strong></li>
-                <li>Build your story in <strong>Story Events</strong>:
-                  <ul style="margin-top: 10px;">
-                    <li>Start with event ID "start" (or your initial event)</li>
-                    <li>Add dialogue events with characters</li>
-                    <li>Link events together with "next" property</li>
-                    <li>Add choice events for branching paths</li>
-                  </ul>
-                </li>
-                <li>Save your project regularly</li>
-                <li>Export and deploy to test in Library</li>
-              </ol>
+            <div style="background: rgba(255, 215, 0, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #ffd700; margin: 20px 0;">
+              <h4 style="color: #ffd700; margin-top: 0;">📖 Available Documentation</h4>
+              <ul style="margin-left: 20px; color: #ccc;">
+                <li><strong>README</strong> - Overview, installation, and quick start guide</li>
+                <li><strong>User Guide</strong> - Complete walkthrough for building visual novels</li>
+                <li><strong>Game Format</strong> - Technical specifications and advanced features</li>
+              </ul>
             </div>
 
-            <h3 style="color: #ffd700; margin-top: 30px;">💡 Tips & Best Practices</h3>
-            <ul style="margin-left: 20px;">
-              <li>Use descriptive event IDs: "chapter1_intro" instead of "event1"</li>
-              <li>Keep choice text short (1-2 lines max)</li>
-              <li>Test your game frequently during development</li>
-              <li>Use consistent naming for character sprites</li>
-              <li>Add a "narrator" character for narration events</li>
-              <li>Plan your story flow on paper before building</li>
-              <li>Use variables to track important player choices</li>
+            <h3 style="color: #ffd700;">� How to Access Documentation</h3>
+            <ol style="margin-left: 20px; color: #ccc;">
+              <li>Click the <strong>⚙️ Settings</strong> button in the top navigation</li>
+              <li>Scroll down to the <strong>📖 Help</strong> section</li>
+              <li>Click <strong>� Documentation ▼</strong> to open the dropdown</li>
+              <li>Select the guide you need from the dropdown menu</li>
+            </ol>
+
+            <div style="background: rgba(0, 255, 255, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #00ffff; margin: 20px 0;">
+              <h4 style="color: #00ffff; margin-top: 0;">� Quick Start</h4>
+              <p style="margin: 0; color: #ccc;">New to Novellium? Start with the <strong>User Guide</strong> for a complete walkthrough of building your first visual novel, from character creation to deployment.</p>
+            </div>
+
+            <h3 style="color: #ffd700;">🎯 What You'll Learn</h3>
+            <ul style="margin-left: 20px; color: #ccc;">
+              <li><strong>Engine Overview</strong> - How events, characters, and assets work together</li>
+              <li><strong>Story Building</strong> - Creating dialogue, narration, and choice events</li>
+              <li><strong>Character System</strong> - Setting up characters with sprites and emotions</li>
+              <li><strong>Asset Management</strong> - Working with backgrounds, sprites, and audio</li>
+              <li><strong>Branching Stories</strong> - Creating choices and conditional logic</li>
+              <li><strong>Export & Deploy</strong> - Publishing your games locally or to the cloud</li>
             </ul>
           </div>
         </div>
@@ -769,18 +697,10 @@
             <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 30px 0;">
 
             <h3 style="color: #ffd700;">Asset Guidelines</h3>
-            <p>Recommended sizes and formats:</p>
-            <ul style="color: #ccc;">
-              <li><strong>Backgrounds:</strong> 1920x1080px (16:9 ratio) - .jpg or .png</li>
-              <li><strong>Character Sprites:</strong> 512x1024px (transparent PNG)</li>
-              <li><strong>Thumbnails:</strong> 400x225px (for game selection)</li>
-              <li><strong>Music:</strong> .mp3 or .ogg format</li>
-              <li><strong>Sound Effects:</strong> .mp3 or .ogg format</li>
-            </ul>
-
-            <p style="color: #ccc; margin-top: 20px;">
-              <strong>Note:</strong> Files are stored in browser storage. Use "Download All Assets" to export them as a zip file for deployment.
-            </p>
+            <p>For detailed asset specifications, formats, and best practices, please refer to the <strong>📚 Documentation</strong> available in the Settings menu.</p>
+            <div style="background: rgba(255, 215, 0, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #ffd700; margin-top: 10px;">
+              <p style="margin: 0; color: #ccc;"><strong>Quick access:</strong> Settings → Help → Documentation → Game Format</p>
+            </div>
           </div>
         </div>
 
@@ -817,13 +737,10 @@
             <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 30px 0;">
 
             <h3 style="color: #ffd700;">Manual Installation Instructions</h3>
-            <ol style="color: #ccc; line-height: 1.8;">
-              <li>Export Complete Package (ZIP) using button above</li>
-              <li>Go to "📥 Import & Deploy" tab to upload and deploy</li>
-              <li>Or manually extract and place in <code>gamefolder/[your-game-id]/</code></li>
-              <li>Update <code>games-list.json</code> to include your game</li>
-              <li>Test in Novellium!</li>
-            </ol>
+            <p>For complete installation and deployment instructions, including advanced deployment options, please refer to the comprehensive documentation.</p>
+            <div style="background: rgba(255, 215, 0, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #ffd700; margin-top: 10px;">
+              <p style="margin: 0; color: #ccc;"><strong>Documentation access:</strong> Settings → Help → Documentation → User Guide</p>
+            </div>
           </div>
         </div>
 
@@ -2697,7 +2614,14 @@
       <div class="settings-section">
         <h4>📖 Help</h4>
         <div class="setting-item">
-          <button id="btn-documentation" class="settings-btn help">📚 Documentation</button>
+          <div class="dropdown">
+            <button class="settings-btn help dropdown-toggle">📚 Documentation ▼</button>
+            <div class="dropdown-content">
+              <a href="#" id="btn-readme" class="dropdown-item">📖 README</a>
+              <a href="#" id="btn-user-guide" class="dropdown-item">👤 User Guide</a>
+              <a href="#" id="btn-game-format" class="dropdown-item">🎮 Game Format</a>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -3030,12 +2954,39 @@
         e.target.value = '';
       };
       
-      document.getElementById('btn-documentation').onclick = () => {
-        try {
-          window.open('README.pdf', '_blank');
-        } catch (error) {
-          alert('Documentation PDF not found. Please ensure README.pdf is in the project directory.');
+      // Documentation dropdown functionality
+      const dropdownToggle = document.querySelector('.dropdown-toggle');
+      const dropdown = document.querySelector('.dropdown');
+      
+      dropdownToggle.onclick = (e) => {
+        e.preventDefault();
+        dropdown.classList.toggle('active');
+      };
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('active');
         }
+      });
+      
+      // Documentation link handlers
+      document.getElementById('btn-readme').onclick = (e) => {
+        e.preventDefault();
+        window.open('docs/pdf-viewer.html?doc=README.md', '_blank');
+        dropdown.classList.remove('active');
+      };
+      
+      document.getElementById('btn-user-guide').onclick = (e) => {
+        e.preventDefault();
+        window.open('docs/pdf-viewer.html?doc=docs/USER-GUIDE.md', '_blank');
+        dropdown.classList.remove('active');
+      };
+      
+      document.getElementById('btn-game-format').onclick = (e) => {
+        e.preventDefault();
+        window.open('docs/pdf-viewer.html?doc=docs/GAME-FORMAT.md', '_blank');
+        dropdown.classList.remove('active');
       };
     });
 
