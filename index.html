@@ -138,7 +138,7 @@
     // Load games list
     async function loadGamesList() {
       try {
-        const response = await fetch(`./games-list.json?v=${Date.now()}`);
+        const response = await fetch(`./config/games-list.json?v=${Date.now()}`);
         gamesList = await response.json();
         
         // Merge with deployed games from localStorage
@@ -954,7 +954,7 @@
     // Load navbar component
     async function loadNavbar() {
       try {
-        const response = await fetch('navbar.html');
+        const response = await fetch('scripts/navbar.html');
         const html = await response.text();
         document.getElementById('navbar-container').innerHTML = html;
         
