@@ -8,6 +8,9 @@ export class Renderer {
       dialogueText: null,
       choicesContainer: null
     };
+    this.currentTypewriterInterval = null;
+    this.isTyping = false;
+    this.currentText = '';
     this.initialize();
   }
 
@@ -21,7 +24,7 @@ export class Renderer {
           <img id="character" class="character" />
         </div>
         <div class="dialogue-layer">
-          <div class="dialogue-box">
+          <div class="dialogue-box" id="dialogue-box">
             <div id="character-name" class="character-name"></div>
             <div id="dialogue-text" class="dialogue-text"></div>
           </div>
@@ -35,13 +38,33 @@ export class Renderer {
     this.elements.characterName = document.getElementById('character-name');
     this.elements.dialogueText = document.getElementById('dialogue-text');
     this.elements.choicesContainer = document.getElementById('choices');
+    this.elements.dialogueBox = document.getElementById('dialogue-box');
+
+    // Add click listener to skip typewriter effect
+    this.elements.dialogueBox.addEventListener('click', (e) => {
+      // Don't skip typewriter if choices are visible (user should click choices instead)
+      if (this.elements.choicesContainer.children.length > 0) {
+        return;
+      }
+      
+      if (this.isTyping) {
+        this.skipTypewriter();
+      }
+    });
   }
 
   renderEvent(event, character, backgroundImg, characterImg) {
+    // Ensure dialogue box is visible
+    if (this.elements.dialogueBox) {
+      this.elements.dialogueBox.style.display = 'block';
+    }
+    
     // Update background
     if (backgroundImg) {
       this.elements.background.src = backgroundImg.src;
       this.elements.background.style.display = 'block';
+    } else {
+      this.elements.background.style.display = 'none';
     }
 
     // Update character
@@ -55,9 +78,17 @@ export class Renderer {
       this.elements.characterName.textContent = '';
     }
 
-    // Update dialogue
+    // Clear any existing typewriter animation before starting new one
+    this.clearTypewriter();
+    
+    // Hide choices container when starting new dialogue
+    this.elements.choicesContainer.innerHTML = '';
+    
+    // Update dialogue - ensure we have text
     this.elements.dialogueText.textContent = '';
-    this.typewriterEffect(event.dialogue);
+    if (event.dialogue) {
+      this.typewriterEffect(event.dialogue);
+    }
   }
 
   renderChoices(choices, onChoiceSelected) {
@@ -73,15 +104,44 @@ export class Renderer {
   }
 
   typewriterEffect(text, speed = 30) {
+    // Clear any existing typewriter animation
+    this.clearTypewriter();
+    
+    // Set current text for reference
+    this.currentText = text;
+    this.isTyping = true;
+
     let index = 0;
-    const interval = setInterval(() => {
+    
+    const typeNextCharacter = () => {
       if (index < text.length) {
         this.elements.dialogueText.textContent += text[index];
         index++;
+        this.currentTypewriterInterval = setTimeout(typeNextCharacter, speed);
       } else {
-        clearInterval(interval);
+        this.isTyping = false;
       }
-    }, speed);
+    };
+
+    typeNextCharacter();
+  }
+
+  skipTypewriter() {
+    if (this.isTyping && this.currentText) {
+      // Clear the interval
+      this.clearTypewriter();
+      
+      // Display full text immediately
+      this.elements.dialogueText.textContent = this.currentText;
+      this.isTyping = false;
+    }
+  }
+
+  clearTypewriter() {
+    if (this.currentTypewriterInterval) {
+      clearTimeout(this.currentTypewriterInterval);
+      this.currentTypewriterInterval = null;
+    }
   }
 
   showError(message) {

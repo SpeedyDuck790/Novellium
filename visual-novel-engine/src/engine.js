@@ -15,10 +15,12 @@ export class VisualNovelEngine {
     this.characters = new Map();
     this.events = new Map();
     this.config = null;
+    this.currentGameFolder = null;
   }
 
   async loadGame(folderPath) {
     try {
+      this.currentGameFolder = folderPath;
       this.assetLoader = new AssetLoader(folderPath);
       
       // Load config
@@ -69,7 +71,10 @@ export class VisualNovelEngine {
     const eventId = this.gameState.currentEvent;
     const event = this.events.get(eventId);
     
+    console.log('Rendering event:', eventId);
+    
     if (!event) {
+      console.error(`Event not found: ${eventId}`);
       this.renderer.showError(`Event not found: ${eventId}`);
       return;
     }
@@ -84,6 +89,8 @@ export class VisualNovelEngine {
     // Get dialogue text based on current flags
     const dialogueText = event.getDialogueText(this.gameState.flags);
     event.dialogue = dialogueText; // Update for rendering
+    
+    console.log('Event dialogue:', dialogueText);
 
     // Load assets
     let backgroundImg = null;
@@ -92,6 +99,7 @@ export class VisualNovelEngine {
 
     if (event.background) {
       backgroundImg = await this.assetLoader.loadImage(event.background);
+      console.log('Loaded background:', event.background);
     }
 
     if (event.character) {
@@ -99,6 +107,7 @@ export class VisualNovelEngine {
       if (character) {
         const spritePath = character.getSprite(event.character.sprite);
         characterImg = await this.assetLoader.loadImage(spritePath);
+        console.log('Loaded character:', event.character.id, spritePath);
       }
     }
 
@@ -107,6 +116,7 @@ export class VisualNovelEngine {
 
     // Render choices
     const availableChoices = event.getAvailableChoices(this.gameState.flags);
+    console.log('Available choices:', availableChoices.length);
     this.renderer.renderChoices(availableChoices, (choice) => this.onChoiceSelected(choice));
   }
 
@@ -124,14 +134,25 @@ export class VisualNovelEngine {
   }
 
   saveGame(slotName = 'autosave') {
-    this.saveManager.save(slotName, this.gameState);
+    this.saveManager.save(slotName, this.gameState, this.currentGameFolder);
   }
 
-  loadSave(slotName = 'autosave') {
+  async loadSave(slotName = 'autosave') {
     const saveData = this.saveManager.load(slotName);
     if (saveData) {
+      // If the save has a different game folder or game not loaded, load that game first
+      if (saveData.gameFolder && (saveData.gameFolder !== this.currentGameFolder || !this.config)) {
+        await this.loadGame(saveData.gameFolder);
+      }
+      
+      // Ensure game is loaded before restoring state
+      if (!this.config) {
+        console.error('Cannot load save: Game not loaded');
+        return false;
+      }
+      
       this.gameState.fromJSON(saveData);
-      this.renderCurrentEvent();
+      await this.renderCurrentEvent();
       return true;
     }
     return false;

@@ -9,38 +9,69 @@
 <body>
   <div class="app-container">
     <nav class="navbar">
-      <button id="btn-home">Home</button>
-      <div class="nav-dropdown">
-        <button id="btn-games" class="dropdown-btn">Games ▼</button>
-        <div id="games-dropdown" class="dropdown-content">
-          <!-- Games list will be populated here -->
-        </div>
+      <div class="nav-left">
+        <button id="btn-home" class="nav-btn primary">🏠 Home</button>
       </div>
-      <div class="nav-dropdown">
-        <button id="btn-saves" class="dropdown-btn">Saves ▼</button>
-        <div id="saves-dropdown" class="dropdown-content">
-          <!-- Save files will be populated here -->
-        </div>
+      <div class="nav-center">
+        <h3 id="current-game-title">Visual Novel Engine</h3>
       </div>
-      <button id="btn-save">Save Game</button>
+      <div class="nav-right">
+        <button id="btn-save" class="nav-btn">💾 Save</button>
+        <button id="btn-menu" class="nav-btn">⚙️ Menu</button>
+      </div>
     </nav>
+    
+    <!-- New expandable game menu -->
+    <div id="slide-menu" class="slide-menu">
+      <div class="menu-header">
+        <h3>Games & Saves</h3>
+        <button id="close-menu" class="close-btn">✕</button>
+      </div>
+      
+      <!-- Game cards at top -->
+      <div class="menu-games-bar" id="menu-games-bar">
+        <!-- Game cards will be populated here -->
+      </div>
+      
+      <!-- Expandable saves section -->
+      <div class="menu-saves-section" id="menu-saves-section" style="display: none;">
+        <div class="saves-header">
+          <h4 id="selected-game-title">Select a game above</h4>
+          <button id="btn-new-save" class="new-save-btn" style="display: none;">➕ New Save</button>
+        </div>
+        <div id="menu-saves-list" class="saves-list">
+          <p class="no-selection">Select a game to view saves</p>
+        </div>
+      </div>
+    </div>
     
     <div id="feedback-toast" class="feedback-toast"></div>
     
     <div id="game-container" class="game-container">
       <div id="start-screen" class="start-screen">
-        <h1>Visual Novel Engine</h1>
+        <div class="welcome-section">
+          <h1>Visual Novel Engine</h1>
+          <p>Select a game to play or load a save</p>
+        </div>
         
-        <div class="start-content">
-          <div class="games-section">
-            <h2>Available Games</h2>
-            <div id="games-list" class="games-list"></div>
+        <!-- Horizontal game cards -->
+        <div class="games-carousel" id="games-carousel">
+          <!-- Games will be populated here -->
+        </div>
+        
+        <!-- Expandable saves panel -->
+        <div class="saves-panel" id="saves-panel" style="display: none;">
+          <div class="saves-panel-header">
+            <h3 id="saves-panel-title">Select a game above</h3>
+            <button id="close-saves-panel" class="close-panel-btn">✕</button>
           </div>
-          
-          <div class="saves-section">
-            <h2>Save Files</h2>
-            <div id="saves-list" class="saves-list">
-              <p class="no-saves">No save files found</p>
+          <div class="saves-panel-content">
+            <button id="btn-play-new" class="play-new-btn">▶ Start New Game</button>
+            <div class="saves-divider">
+              <span>or load a save</span>
+            </div>
+            <div id="start-saves-list" class="start-saves-list">
+              <p class="no-saves">No saves available</p>
             </div>
           </div>
         </div>
@@ -50,83 +81,425 @@
 
   <script type="module">
     import { VisualNovelEngine } from './src/engine.js';
+    import { SaveManager } from './src/managers/SaveManager.js';
 
     let engine = null;
     let currentGame = null;
+    let gamesList = [];
+    let saveManager = new SaveManager(); // Create a shared save manager
 
-    // Load games list and create menu
-    async function loadGameMenu() {
+    // Feedback system
+    function showFeedback(message, type = 'success') {
+      const toast = document.getElementById('feedback-toast');
+      toast.textContent = message;
+      toast.className = `feedback-toast ${type} show`;
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Load games list
+    async function loadGamesList() {
       try {
         const response = await fetch('./games-list.json');
-        const gamesList = await response.json();
-        
-        const gamesContainer = document.getElementById('games-list');
-        gamesContainer.innerHTML = '';
-        
-        gamesList.games.forEach(game => {
-          const gameCard = document.createElement('div');
-          gameCard.className = 'game-card';
-          gameCard.innerHTML = `
-            <img src="${game.thumbnail}" alt="${game.title}" class="game-thumbnail" onerror="this.style.display='none'">
-            <h3>${game.title}</h3>
-            <p>${game.description}</p>
-            <button onclick="loadGame('${game.folder}')" class="load-game-btn">Play Game</button>
-          `;
-          gamesContainer.appendChild(gameCard);
-        });
+        gamesList = await response.json();
+        populateGamesCarousel();
+        populateMenuGames();
       } catch (error) {
         console.error('Failed to load games list:', error);
-        document.getElementById('games-list').innerHTML = '<p>Error loading games list</p>';
+        showFeedback('Failed to load games list', 'error');
       }
+    }
+
+    // Populate games carousel on start screen
+    let selectedGameOnStart = null;
+    
+    function populateGamesCarousel() {
+      const gamesCarousel = document.getElementById('games-carousel');
+      gamesCarousel.innerHTML = '';
+      
+      gamesList.games.forEach(game => {
+        const gameCard = document.createElement('div');
+        gameCard.className = 'carousel-game-card';
+        gameCard.dataset.gameFolder = game.folder;
+        gameCard.innerHTML = `
+          <div class="carousel-game-thumbnail">
+            <img src="${game.thumbnail}" alt="${game.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22120%22%3E%3Crect fill=%22%23333%22 width=%22200%22 height=%22120%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+          </div>
+          <div class="carousel-game-info">
+            <h3>${game.title}</h3>
+            <p>${game.description}</p>
+          </div>
+        `;
+        
+        // Click card to expand saves
+        gameCard.addEventListener('click', () => {
+          selectGameOnStart(game);
+        });
+        
+        gamesCarousel.appendChild(gameCard);
+      });
+    }
+
+    // Select a game on start screen to show saves
+    function selectGameOnStart(game) {
+      selectedGameOnStart = game;
+      
+      // Update card selection
+      document.querySelectorAll('.carousel-game-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-game-folder="${game.folder}"]`).classList.add('selected');
+      
+      // Show saves panel
+      const savesPanel = document.getElementById('saves-panel');
+      savesPanel.style.display = 'block';
+      document.getElementById('saves-panel-title').textContent = game.title;
+      
+      // Setup play new button
+      document.getElementById('btn-play-new').onclick = () => {
+        loadGame(game.folder);
+      };
+      
+      // Load saves for this game
+      loadStartSavesForGame(game.folder);
+    }
+
+    // Load saves for game on start screen
+    function loadStartSavesForGame(gameFolder) {
+      // Use the shared save manager instead of creating engine
+      const allSaves = saveManager.getSaveSlots();
+      console.log('All saves:', allSaves);
+      console.log('Looking for saves with gameFolder:', gameFolder);
+      
+      const gameSaves = allSaves.filter(save => save.gameFolder === gameFolder);
+      console.log('Filtered game saves:', gameSaves);
+      
+      const savesList = document.getElementById('start-saves-list');
+      
+      if (gameSaves.length === 0) {
+        savesList.innerHTML = '<p class="no-saves">No saves for this game yet</p>';
+        return;
+      }
+      
+      savesList.innerHTML = '';
+      gameSaves.forEach(save => {
+        const item = document.createElement('div');
+        item.className = 'start-save-item';
+        const date = new Date(save.timestamp).toLocaleString();
+        
+        item.innerHTML = `
+          <div class="save-info">
+            <span class="save-name">${save.name}</span>
+            <span class="save-date">${date}</span>
+          </div>
+          <div class="save-actions">
+            <button onclick="loadSaveAndPlay('${save.name}')" class="load-save-btn">Load</button>
+            <button onclick="deleteStartSave('${save.name}')" class="delete-save-btn">×</button>
+          </div>
+        `;
+        savesList.appendChild(item);
+      });
+    }
+
+    // Delete save from start screen
+    window.deleteStartSave = function(saveName) {
+      if (confirm(`Delete "${saveName}"?`)) {
+        saveManager.deleteSave(saveName);
+        if (selectedGameOnStart) {
+          loadStartSavesForGame(selectedGameOnStart.folder);
+        }
+        showFeedback(`Deleted: ${saveName}`);
+      }
+    };
+
+    // Close saves panel
+    document.getElementById('close-saves-panel').onclick = () => {
+      document.getElementById('saves-panel').style.display = 'none';
+      document.querySelectorAll('.carousel-game-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      selectedGameOnStart = null;
+    };
+
+    // Populate menu games bar with cards
+    let selectedGameForSaves = null;
+    
+    function populateMenuGames() {
+      const menuGamesBar = document.getElementById('menu-games-bar');
+      menuGamesBar.innerHTML = '';
+      
+      gamesList.games.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'menu-game-card';
+        card.dataset.gameFolder = game.folder;
+        card.innerHTML = `
+          <div class="menu-game-thumbnail">
+            <img src="${game.thumbnail}" alt="${game.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23333%22 width=%22100%22 height=%22100%22/%3E%3C/svg%3E'">
+          </div>
+          <div class="menu-game-info">
+            <h5>${game.title}</h5>
+            <button class="play-game-btn" onclick="loadGame('${game.folder}')">▶ Play</button>
+          </div>
+        `;
+        
+        // Click card to show saves
+        card.addEventListener('click', (e) => {
+          if (!e.target.classList.contains('play-game-btn')) {
+            selectGameForSaves(game);
+          }
+        });
+        
+        menuGamesBar.appendChild(card);
+      });
+    }
+
+    // Select a game to view its saves
+    function selectGameForSaves(game) {
+      selectedGameForSaves = game;
+      
+      // Update UI
+      document.querySelectorAll('.menu-game-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelector(`[data-game-folder="${game.folder}"]`).classList.add('selected');
+      
+      // Show saves section
+      document.getElementById('menu-saves-section').style.display = 'block';
+      document.getElementById('selected-game-title').textContent = `${game.title} - Saves`;
+      document.getElementById('btn-new-save').style.display = 'block';
+      
+      // Load saves for this game
+      loadMenuSavesForGame(game.folder);
+    }
+
+    // Load and populate save files for specific game
+    function loadMenuSavesForGame(gameFolder) {
+      if (!engine) {
+        engine = new VisualNovelEngine(document.getElementById('game-container'));
+      }
+      
+      const allSaves = engine.saveManager.getSaveSlots();
+      const gameSaves = allSaves.filter(save => save.gameFolder === gameFolder);
+      const menuSavesList = document.getElementById('menu-saves-list');
+      
+      if (gameSaves.length === 0) {
+        menuSavesList.innerHTML = '<p class="no-saves">No saves for this game yet</p>';
+        return;
+      }
+      
+      menuSavesList.innerHTML = '';
+      gameSaves.forEach(save => {
+        const item = document.createElement('div');
+        item.className = 'save-item';
+        const date = new Date(save.timestamp).toLocaleString();
+        
+        item.innerHTML = `
+          <div class="save-info">
+            <span class="save-name">${save.name}</span>
+            <span class="save-date">${date}</span>
+          </div>
+          <div class="save-actions">
+            <button onclick="loadSaveAndPlay('${save.name}')" class="load-save-btn">Load</button>
+            <button onclick="deleteSave('${save.name}')" class="delete-save-btn">Delete</button>
+          </div>
+        `;
+        menuSavesList.appendChild(item);
+      });
     }
 
     // Load a specific game
     window.loadGame = async function(gamePath) {
       try {
-        document.getElementById('game-menu').style.display = 'none';
-        document.getElementById('game-container').innerHTML = '<div class="loading">Loading game...</div>';
+        showFeedback('Loading game...', 'info');
         
-        engine = new VisualNovelEngine(document.getElementById('game-container'));
-        currentGame = gamePath;
-        await engine.loadGame(gamePath);
+        // Hide start screen
+        const startScreen = document.getElementById('start-screen');
+        if (startScreen) {
+          startScreen.style.display = 'none';
+        }
+        
+        // Close menu
+        document.getElementById('slide-menu').classList.remove('open');
+        
+        // Only create new engine if it doesn't exist or game changed
+        if (!engine || currentGame !== gamePath) {
+          engine = new VisualNovelEngine(document.getElementById('game-container'));
+          currentGame = gamePath;
+          await engine.loadGame(gamePath);
+        }
+        
+        // Update nav title
+        const gameInfo = gamesList.games.find(g => g.folder === gamePath);
+        document.getElementById('current-game-title').textContent = gameInfo ? gameInfo.title : 'Playing Game';
+        
+        showFeedback('Game loaded!');
       } catch (error) {
         console.error('Failed to load game:', error);
-        showGameMenu();
+        showFeedback('Failed to load game', 'error');
+        showStartScreen();
       }
     };
 
-    // Show game menu
-    function showGameMenu() {
+    // Load save file and start playing
+    window.loadSaveAndPlay = async function(saveName) {
+      try {
+        showFeedback('Loading save...', 'info');
+        
+        // Get save data first to check game folder
+        const saveData = saveManager.load(saveName);
+        if (!saveData) {
+          showFeedback('Save not found', 'error');
+          return;
+        }
+        
+        console.log('Loading save:', saveName, 'for game:', saveData.gameFolder);
+        
+        // Hide start screen first
+        const startScreen = document.getElementById('start-screen');
+        if (startScreen) {
+          startScreen.style.display = 'none';
+        }
+        document.getElementById('slide-menu').classList.remove('open');
+        
+        // Create engine if needed or if different game
+        if (!engine || currentGame !== saveData.gameFolder) {
+          console.log('Creating new engine for:', saveData.gameFolder);
+          engine = new VisualNovelEngine(document.getElementById('game-container'));
+          currentGame = saveData.gameFolder;
+        }
+        
+        // Load the save
+        const success = await engine.loadSave(saveName);
+        
+        if (success) {
+          showFeedback(`Loaded: ${saveName}`);
+          
+          // Update nav title
+          const gameInfo = gamesList.games.find(g => g.folder === saveData.gameFolder);
+          document.getElementById('current-game-title').textContent = gameInfo ? gameInfo.title : 'Playing Game';
+        } else {
+          showFeedback('Failed to load save', 'error');
+          showStartScreen();
+        }
+      } catch (error) {
+        console.error('Error loading save:', error);
+        showFeedback('Failed to load save', 'error');
+        showStartScreen();
+      }
+    };
+
+    // Delete save file
+    window.deleteSave = function(saveName) {
+      if (!engine) {
+        engine = new VisualNovelEngine(document.getElementById('game-container'));
+      }
+      
+      if (confirm(`Delete "${saveName}"?`)) {
+        engine.saveManager.deleteSave(saveName);
+        if (selectedGameForSaves) {
+          loadMenuSavesForGame(selectedGameForSaves.folder);
+        }
+        showFeedback(`Deleted: ${saveName}`);
+      }
+    };
+
+    // Show start screen
+    function showStartScreen() {
       document.getElementById('game-container').innerHTML = `
-        <div id="game-menu" class="game-menu">
-          <h1>Visual Novel Engine</h1>
-          <p>Choose a game to play:</p>
-          <div id="games-list" class="games-list"></div>
+        <div id="start-screen" class="start-screen">
+          <div class="welcome-section">
+            <h1>Visual Novel Engine</h1>
+            <p>Select a game to play or load a save</p>
+          </div>
+          
+          <!-- Horizontal game cards -->
+          <div class="games-carousel" id="games-carousel">
+            <!-- Games will be populated here -->
+          </div>
+          
+          <!-- Expandable saves panel -->
+          <div class="saves-panel" id="saves-panel" style="display: none;">
+            <div class="saves-panel-header">
+              <h3 id="saves-panel-title">Select a game above</h3>
+              <button id="close-saves-panel" class="close-panel-btn">✕</button>
+            </div>
+            <div class="saves-panel-content">
+              <button id="btn-play-new" class="play-new-btn">▶ Start New Game</button>
+              <div class="saves-divider">
+                <span>or load a save</span>
+              </div>
+              <div id="start-saves-list" class="start-saves-list">
+                <p class="no-saves">No saves available</p>
+              </div>
+            </div>
+          </div>
         </div>
       `;
-      loadGameMenu();
+      
+      document.getElementById('current-game-title').textContent = 'Visual Novel Engine';
+      populateGamesCarousel();
+      
+      // Re-attach close button listener
+      document.getElementById('close-saves-panel').onclick = () => {
+        document.getElementById('saves-panel').style.display = 'none';
+        document.querySelectorAll('.carousel-game-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+        selectedGameOnStart = null;
+      };
+      
+      currentGame = null;
     }
 
-    // Navigation buttons
-    document.getElementById('btn-home').onclick = () => showGameMenu();
-    document.getElementById('btn-restart').onclick = () => {
-      if (engine && currentGame) {
-        engine.restartGame();
-      }
-    };
+    // Navigation event handlers
+    document.getElementById('btn-home').onclick = () => showStartScreen();
+    
     document.getElementById('btn-save').onclick = () => {
-      if (engine) {
-        engine.saveGame('manual_save');
-      }
-    };
-    document.getElementById('btn-load').onclick = () => {
-      if (engine) {
-        engine.loadSave('manual_save');
+      if (engine && currentGame) {
+        const saveName = prompt('Save name:', `Save_${new Date().toLocaleDateString().replace(/\//g, '_')}`);
+        if (saveName) {
+          engine.saveGame(saveName);
+          showFeedback(`Saved: ${saveName}`);
+        }
+      } else {
+        showFeedback('No game to save', 'error');
       }
     };
 
-    // Initialize with game menu
-    loadGameMenu();
+    // Menu functionality
+    document.getElementById('btn-menu').onclick = () => {
+      document.getElementById('slide-menu').classList.toggle('open');
+    };
+
+    document.getElementById('close-menu').onclick = () => {
+      document.getElementById('slide-menu').classList.remove('open');
+    };
+    
+    // New save button in menu
+    document.getElementById('btn-new-save').onclick = () => {
+      if (selectedGameForSaves) {
+        const saveName = prompt('Save name:', `${selectedGameForSaves.title}_${new Date().toLocaleDateString().replace(/\//g, '_')}`);
+        if (saveName) {
+          // Note: This creates a placeholder - actual save needs active game
+          showFeedback('Start the game first to create a save', 'info');
+        }
+      }
+    };
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById('slide-menu');
+      const menuBtn = document.getElementById('btn-menu');
+      
+      if (!menu.contains(event.target) && event.target !== menuBtn) {
+        menu.classList.remove('open');
+      }
+    });
+
+    // Initialize application
+    loadGamesList();
   </script>
 </body>
 </html>

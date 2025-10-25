@@ -3,8 +3,12 @@ export class SaveManager {
     this.storageKey = 'vn_save_';
   }
 
-  save(slotName, gameState) {
-    const saveData = gameState.toJSON();
+  save(slotName, gameState, gameFolder = null) {
+    const saveData = {
+      ...gameState.toJSON(),
+      gameFolder: gameFolder,
+      timestamp: Date.now()
+    };
     localStorage.setItem(this.storageKey + slotName, JSON.stringify(saveData));
   }
 
@@ -20,10 +24,15 @@ export class SaveManager {
       if (key.startsWith(this.storageKey)) {
         const slotName = key.replace(this.storageKey, '');
         const data = JSON.parse(localStorage.getItem(key));
-        slots.push({ name: slotName, timestamp: data.timestamp });
+        slots.push({ 
+          name: slotName, 
+          timestamp: data.timestamp || Date.now(),
+          gameFolder: data.gameFolder || 'unknown'
+        });
       }
     }
-    return slots;
+    // Sort by timestamp, most recent first
+    return slots.sort((a, b) => b.timestamp - a.timestamp);
   }
 
   deleteSave(slotName) {
