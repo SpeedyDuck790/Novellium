@@ -1,0 +1,37 @@
+{
+  "characters": {
+    "wizard": {
+      "name": "Merlin the Wise",
+      "sprites": {
+        "neutral": "sprites/wizard_neutral.png",
+        "happy": "sprites/wizard_happy.png",
+        "mysterious": "sprites/wizard_mysterious.png"
+      },
+      "details": {
+        "age": "Ancient",
+        "personality": "Wise and mysterious mentor"
+      }
+    },
+    "princess": {
+      "name": "Princess Luna",
+      "sprites": {
+        "neutral": "sprites/princess_neutral.png",
+        "worried": "sprites/princess_worried.png",
+        "happy": "sprites/princess_happy.png"
+      },
+      "details": {
+        "personality": "Brave and kind royal"
+      }
+    },
+    "dragon": {
+      "name": "Shadowfang",
+      "sprites": {
+        "angry": "sprites/dragon_angry.png",
+        "friendly": "sprites/dragon_friendly.png"
+      },
+      "details": {
+        "personality": "Misunderstood creature"
+      }
+    }
+  }
+}

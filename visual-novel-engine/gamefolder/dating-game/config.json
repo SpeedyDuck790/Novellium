@@ -1,0 +1,7 @@
+{
+  "name": "Love Quest",
+  "version": "1.0.0",
+  "startEvent": "intro",
+  "characters": "characters.json",
+  "story": "story.json"
+}

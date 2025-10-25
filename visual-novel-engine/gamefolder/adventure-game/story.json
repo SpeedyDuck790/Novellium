@@ -1,0 +1,305 @@
+{
+  "events": {
+    "forest_start": {
+      "name": "The Enchanted Forest",
+      "type": "narration",
+      "background": "backgrounds/forest_path.jpg",
+      "dialogue": "You are a young adventurer who has just entered the mystical Enchanted Forest. Ancient trees tower above you, their leaves whispering secrets in the wind. Somewhere in these woods lies a great mystery waiting to be solved.",
+      "choices": [
+        {
+          "text": "Follow the main path deeper into the forest",
+          "nextEvent": "meet_wizard"
+        },
+        {
+          "text": "Investigate the strange glowing light to your left",
+          "nextEvent": "magic_spring"
+        },
+        {
+          "text": "Listen carefully to the whispers in the trees",
+          "nextEvent": "tree_whispers"
+        }
+      ]
+    },
+    "meet_wizard": {
+      "name": "The Wise Wizard",
+      "type": "dialogue",
+      "background": "backgrounds/wizard_tower.jpg",
+      "character": {
+        "id": "wizard",
+        "sprite": "neutral",
+        "position": "center"
+      },
+      "dialogue": "Ah, young traveler! I have been expecting you. I am Merlin, guardian of this forest. A great evil has awakened - the dragon Shadowfang has captured Princess Luna!",
+      "choices": [
+        {
+          "text": "I'll rescue the princess! Where is the dragon?",
+          "nextEvent": "wizard_quest",
+          "setFlags": {
+            "accepted_quest": true,
+            "hero_type": "brave"
+          }
+        },
+        {
+          "text": "Why did the dragon capture her?",
+          "nextEvent": "wizard_explanation",
+          "setFlags": {
+            "hero_type": "curious"
+          }
+        },
+        {
+          "text": "I'm not sure I'm ready for this...",
+          "nextEvent": "wizard_encouragement"
+        }
+      ]
+    },
+    "magic_spring": {
+      "name": "The Magic Spring",
+      "type": "scene",
+      "background": "backgrounds/magic_spring.jpg",
+      "dialogue": "You discover a beautiful spring with water that glows with magical energy. As you approach, you see your reflection... but it's not quite right. Your reflection seems to be trying to tell you something important.",
+      "choices": [
+        {
+          "text": "Touch the glowing water",
+          "nextEvent": "gain_magic_power",
+          "setFlags": {
+            "has_magic": true
+          }
+        },
+        {
+          "text": "Try to understand what your reflection is saying",
+          "nextEvent": "reflection_message"
+        },
+        {
+          "text": "Leave the spring alone - it might be dangerous",
+          "nextEvent": "meet_wizard"
+        }
+      ]
+    },
+    "tree_whispers": {
+      "name": "Ancient Secrets",
+      "type": "narration",
+      "background": "backgrounds/ancient_trees.jpg",
+      "dialogue": "You close your eyes and listen carefully. The trees are indeed speaking, sharing ancient knowledge passed down through centuries. You learn that the dragon is not evil - it's been cursed and is desperately seeking help!",
+      "choices": [
+        {
+          "text": "This changes everything! I need to find the dragon",
+          "nextEvent": "seek_dragon",
+          "setFlags": {
+            "knows_truth": true,
+            "dragon_is_friend": true
+          }
+        }
+      ]
+    },
+    "wizard_quest": {
+      "name": "The Quest Begins",
+      "type": "dialogue",
+      "background": "backgrounds/wizard_tower.jpg",
+      "character": {
+        "id": "wizard",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "Excellent! Your courage honors you. The dragon lairs in the Crystal Caves to the north. But beware - Shadowfang is powerful and cunning. Take this magical sword to aid you!",
+      "choices": [
+        {
+          "text": "Thank you! I won't let you down",
+          "nextEvent": "travel_to_caves",
+          "setFlags": {
+            "has_sword": true
+          }
+        }
+      ]
+    },
+    "wizard_explanation": {
+      "name": "The Truth Revealed",
+      "type": "dialogue",
+      "background": "backgrounds/wizard_tower.jpg",
+      "character": {
+        "id": "wizard",
+        "sprite": "mysterious",
+        "position": "center"
+      },
+      "dialogue": {
+        "default": "That's a wise question. The dragon was not always evil. A dark curse has twisted its mind, making it believe the princess is its enemy. But perhaps... if someone could break the curse...",
+        "conditional": [
+          {
+            "conditions": {
+              "has_magic": true
+            },
+            "text": "That's wise to ask. The dragon is cursed! And I sense you have touched magical waters - you might be able to break the curse instead of fighting!"
+          }
+        ]
+      },
+      "choices": [
+        {
+          "text": "Then I'll try to break the curse, not kill the dragon",
+          "nextEvent": "peaceful_path",
+          "setFlags": {
+            "peaceful_solution": true
+          }
+        },
+        {
+          "text": "Curse or no curse, I'll stop the dragon",
+          "nextEvent": "wizard_quest"
+        }
+      ]
+    },
+    "gain_magic_power": {
+      "name": "Magical Awakening",
+      "type": "scene",
+      "background": "backgrounds/magic_spring.jpg",
+      "dialogue": "The moment you touch the water, magical energy courses through you! You feel powerful and enlightened. You now have the ability to communicate with magical creatures and break simple curses.",
+      "choices": [
+        {
+          "text": "This power will help me on my quest",
+          "nextEvent": "meet_wizard"
+        }
+      ]
+    },
+    "travel_to_caves": {
+      "name": "Journey to the Crystal Caves",
+      "type": "scene",
+      "background": "backgrounds/cave_entrance.jpg",
+      "dialogue": "After a long journey, you arrive at the entrance to the Crystal Caves. The air is thick with magic and you can hear the dragon's roars echoing from deep within. This is it - your moment of truth.",
+      "choices": [
+        {
+          "text": "Charge in with sword ready!",
+          "nextEvent": "fight_dragon",
+          "conditions": {
+            "has_sword": true
+          }
+        },
+        {
+          "text": "Try to sneak in quietly",
+          "nextEvent": "sneak_approach"
+        },
+        {
+          "text": "Call out to the dragon peacefully",
+          "nextEvent": "peaceful_approach",
+          "conditions": {
+            "peaceful_solution": true
+          }
+        }
+      ]
+    },
+    "fight_dragon": {
+      "name": "Battle with Shadowfang",
+      "type": "dialogue",
+      "background": "backgrounds/dragon_lair.jpg",
+      "character": {
+        "id": "dragon",
+        "sprite": "angry",
+        "position": "center"
+      },
+      "dialogue": "ROAAAAR! Another fool comes to challenge me! You will not take my treasure... wait, you're not here for gold? You seek the princess? She is under my protection now!",
+      "choices": [
+        {
+          "text": "I'm here to rescue her! Prepare to fight!",
+          "nextEvent": "dragon_battle_outcome"
+        },
+        {
+          "text": "Protection? I thought you captured her!",
+          "nextEvent": "dragon_explains",
+          "setFlags": {
+            "dragon_reveals_truth": true
+          }
+        }
+      ]
+    },
+    "peaceful_approach": {
+      "name": "A Different Way",
+      "type": "dialogue",
+      "background": "backgrounds/dragon_lair.jpg",
+      "character": {
+        "id": "dragon",
+        "sprite": "friendly",
+        "position": "center"
+      },
+      "dialogue": "What? A human who doesn't attack immediately? How... refreshing. Yes, I have the princess, but not for the reasons you think. She came to me for help - we are both victims of the same dark curse!",
+      "choices": [
+        {
+          "text": "Tell me about this curse",
+          "nextEvent": "curse_explanation"
+        },
+        {
+          "text": "I have magic powers - maybe I can help!",
+          "nextEvent": "magic_solution",
+          "conditions": {
+            "has_magic": true
+          }
+        }
+      ]
+    },
+    "curse_explanation": {
+      "name": "The Truth Unveiled",
+      "type": "dialogue",
+      "background": "backgrounds/dragon_lair.jpg",
+      "character": {
+        "id": "princess",
+        "sprite": "worried",
+        "position": "left"
+      },
+      "dialogue": "Thank goodness someone finally listened! An evil sorcerer cursed both Shadowfang and our kingdom. The dragon was trying to protect me, not capture me. We need to work together to break this curse!",
+      "choices": [
+        {
+          "text": "How can we break the curse?",
+          "nextEvent": "quest_solution"
+        }
+      ]
+    },
+    "magic_solution": {
+      "name": "The Power of Understanding",
+      "type": "scene",
+      "background": "backgrounds/dragon_lair.jpg",
+      "dialogue": "Using your newfound magical abilities, you reach out to both the dragon and the princess. The curse dissolves like mist in the morning sun. Shadowfang transforms back into a noble dragon, and the princess is free!",
+      "choices": [
+        {
+          "text": "We did it! The curse is broken!",
+          "nextEvent": "perfect_ending"
+        }
+      ]
+    },
+    "perfect_ending": {
+      "name": "Heroes All",
+      "type": "dialogue",
+      "background": "backgrounds/celebration.jpg",
+      "character": {
+        "id": "princess",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "You've saved us all! By choosing understanding over violence, magic over force, you've proven that the greatest adventures come from an open heart and mind. The kingdom will remember this day forever!",
+      "choices": [
+        {
+          "text": "Play again",
+          "nextEvent": "forest_start"
+        }
+      ]
+    },
+    "dragon_battle_outcome": {
+      "name": "Victory Through Strength",
+      "type": "scene",
+      "background": "backgrounds/dragon_lair.jpg",
+      "dialogue": "After an epic battle, you emerge victorious! But as Shadowfang lies defeated, you realize this dragon was protecting the princess, not imprisoning her. Sometimes victory comes with unexpected truths...",
+      "choices": [
+        {
+          "text": "Learn from this experience",
+          "nextEvent": "bittersweet_ending"
+        }
+      ]
+    },
+    "bittersweet_ending": {
+      "name": "Lessons Learned",
+      "type": "scene",
+      "background": "backgrounds/sunset_kingdom.jpg",
+      "dialogue": "You return to the kingdom as a hero, but with a heavy heart. You've learned that not every problem requires a sword, and that listening might be more powerful than fighting. Next time, you'll ask questions first.",
+      "choices": [
+        {
+          "text": "Play again - try a different approach",
+          "nextEvent": "forest_start"
+        }
+      ]
+    }
+  }
+}

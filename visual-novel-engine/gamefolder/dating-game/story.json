@@ -1,0 +1,234 @@
+{
+  "events": {
+    "intro": {
+      "name": "School Hallway",
+      "type": "scene",
+      "background": "backgrounds/school_hallway.jpg",
+      "dialogue": "You're walking through the school hallway when you spot Emma by her locker. Your heart skips a beat - you've had a crush on her for months. This might be your chance!",
+      "choices": [
+        {
+          "text": "Walk up to her confidently",
+          "nextEvent": "approach_confident"
+        },
+        {
+          "text": "Take a deep breath and approach nervously",
+          "nextEvent": "approach_nervous"
+        },
+        {
+          "text": "Maybe another time... (chicken out)",
+          "nextEvent": "chicken_out"
+        }
+      ]
+    },
+    "approach_confident": {
+      "name": "Confident Approach",
+      "type": "dialogue",
+      "background": "backgrounds/school_hallway.jpg",
+      "character": {
+        "id": "emma",
+        "sprite": "neutral",
+        "position": "center"
+      },
+      "dialogue": "Oh, hi! You seem really confident today. What's up?",
+      "choices": [
+        {
+          "text": "I was wondering... would you like to go out with me?",
+          "nextEvent": "ask_out_direct",
+          "setFlags": {
+            "approach_style": "confident"
+          }
+        }
+      ]
+    },
+    "approach_nervous": {
+      "name": "Nervous Approach", 
+      "type": "dialogue",
+      "background": "backgrounds/school_hallway.jpg",
+      "character": {
+        "id": "emma",
+        "sprite": "neutral",
+        "position": "center"
+      },
+      "dialogue": "Hey there! You look a bit nervous. Everything okay?",
+      "choices": [
+        {
+          "text": "Actually... I wanted to ask you something important",
+          "nextEvent": "ask_out_nervous",
+          "setFlags": {
+            "approach_style": "nervous"
+          }
+        }
+      ]
+    },
+    "chicken_out": {
+      "name": "Missed Opportunity",
+      "type": "scene",
+      "background": "backgrounds/school_hallway.jpg",
+      "dialogue": "You lose your nerve and walk past her. Emma gives you a friendly wave, but you just keep walking. Maybe next time you'll be braver...",
+      "choices": [
+        {
+          "text": "Actually, wait! Turn around",
+          "nextEvent": "approach_nervous"
+        },
+        {
+          "text": "Go home feeling defeated",
+          "nextEvent": "bad_ending"
+        }
+      ]
+    },
+    "ask_out_direct": {
+      "name": "Direct Question",
+      "type": "dialogue",
+      "background": "backgrounds/school_hallway.jpg",
+      "character": {
+        "id": "emma",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "Wow, that's really sweet! I'd love to go out with you. But first... I want to see how well you know me. What's my favorite thing in the whole world?",
+      "choices": [
+        {
+          "text": "Books! You always have one with you",
+          "nextEvent": "correct_answer"
+        },
+        {
+          "text": "Coffee! You're always at the café",
+          "nextEvent": "wrong_answer"
+        },
+        {
+          "text": "Sunset walks! You mentioned them once",
+          "nextEvent": "wrong_answer"
+        }
+      ]
+    },
+    "ask_out_nervous": {
+      "name": "Nervous Question",
+      "type": "dialogue",
+      "background": "backgrounds/school_hallway.jpg",
+      "character": {
+        "id": "emma",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "Aww, you're so cute when you're nervous! What did you want to ask me?",
+      "choices": [
+        {
+          "text": "Would you... maybe... like to go on a date with me?",
+          "nextEvent": "ask_out_direct"
+        }
+      ]
+    },
+    "correct_answer": {
+      "name": "Perfect Answer!",
+      "type": "dialogue",
+      "background": "backgrounds/school_hallway.jpg", 
+      "character": {
+        "id": "emma",
+        "sprite": "love",
+        "position": "center"
+      },
+      "dialogue": "Oh my gosh! You really do pay attention! Yes, I absolutely love books. You know what? I think I'm falling for you already. Yes, I'd love to go on a date with you!",
+      "choices": [
+        {
+          "text": "Really? That's amazing!",
+          "nextEvent": "success_friend",
+          "setFlags": {
+            "got_date": true,
+            "emma_loves_you": true
+          }
+        }
+      ]
+    },
+    "wrong_answer": {
+      "name": "Not Quite Right",
+      "type": "dialogue",
+      "background": "backgrounds/school_hallway.jpg",
+      "character": {
+        "id": "emma",
+        "sprite": "sad",
+        "position": "center"
+      },
+      "dialogue": "Oh... well, those are nice things, but... I was hoping you'd say books. I guess you don't really know me that well yet. Maybe we should just be friends for now.",
+      "choices": [
+        {
+          "text": "I understand... maybe I can get to know you better as friends?",
+          "nextEvent": "failure_friend",
+          "setFlags": {
+            "got_date": false,
+            "emma_disappointed": true
+          }
+        }
+      ]
+    },
+    "success_friend": {
+      "name": "Victory!",
+      "type": "dialogue",
+      "background": "backgrounds/friend_room.jpg",
+      "character": {
+        "id": "friend",
+        "sprite": "happy",
+        "position": "center"
+      },
+      "dialogue": "Dude! I can't believe it! You actually asked Emma out AND she said yes! You're going on a real date! I'm so proud of you, man. You knew exactly what to say!",
+      "choices": [
+        {
+          "text": "Thanks! I can't believe it worked!",
+          "nextEvent": "good_ending"
+        }
+      ]
+    },
+    "failure_friend": {
+      "name": "Better Luck Next Time",
+      "type": "dialogue", 
+      "background": "backgrounds/friend_room.jpg",
+      "character": {
+        "id": "friend",
+        "sprite": "sad",
+        "position": "center"
+      },
+      "dialogue": "Aw man... I'm sorry it didn't work out. But hey, at least you tried! And she wants to be friends - that's not so bad. Maybe if you get to know her better, you'll have another chance someday.",
+      "choices": [
+        {
+          "text": "Yeah, you're right. Thanks for being there for me.",
+          "nextEvent": "neutral_ending"
+        }
+      ]
+    },
+    "good_ending": {
+      "name": "Love Wins!",
+      "type": "scene",
+      "background": "backgrounds/sunset_date.jpg",
+      "dialogue": "Two weeks later, you and Emma are on your third date, watching the sunset together. She takes your hand and smiles. 'I'm so glad you knew my favorite thing was books. It showed me you really care about who I am.'",
+      "choices": [
+        {
+          "text": "Play again",
+          "nextEvent": "intro"
+        }
+      ]
+    },
+    "neutral_ending": {
+      "name": "Friendship Path",
+      "type": "scene", 
+      "background": "backgrounds/library.jpg",
+      "dialogue": "A month later, you and Emma have become good friends. You study together at the library, and she's teaching you about her favorite books. Who knows? Maybe friendship will bloom into something more someday...",
+      "choices": [
+        {
+          "text": "Play again",
+          "nextEvent": "intro"
+        }
+      ]
+    },
+    "bad_ending": {
+      "name": "Missed Chance",
+      "type": "scene",
+      "background": "backgrounds/bedroom.jpeg",
+      "dialogue": "You go home feeling like a coward. Later, you hear that Emma started dating someone else - someone who was brave enough to actually talk to her. Sometimes the biggest risk is not taking any risk at all...",
+      "choices": [
+        {
+          "text": "Try again - be braver this time!",
+          "nextEvent": "intro"
+        }
+      ]
+    }
+  }
+}

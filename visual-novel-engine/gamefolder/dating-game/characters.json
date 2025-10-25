@@ -1,0 +1,31 @@
+{
+  "characters": {
+    "emma": {
+      "name": "Emma",
+      "sprites": {
+        "neutral": "sprites/emma_neutral.png",
+        "happy": "sprites/emma_happy.png",
+        "sad": "sprites/emma_sad.png",
+        "love": "sprites/emma_love.png"
+      },
+      "details": {
+        "age": "18",
+        "personality": "Sweet and thoughtful",
+        "likes": ["books", "coffee", "sunset walks"],
+        "dislikes": ["loud parties", "rude people"],
+        "favorite_thing": "books"
+      }
+    },
+    "friend": {
+      "name": "Alex",
+      "sprites": {
+        "neutral": "sprites/friend_neutral.png",
+        "happy": "sprites/friend_happy.png",
+        "sad": "sprites/friend_sad.png"
+      },
+      "details": {
+        "personality": "Your supportive best friend"
+      }
+    }
+  }
+}

@@ -9,37 +9,124 @@
 <body>
   <div class="app-container">
     <nav class="navbar">
-      <button id="btn-restart">Restart</button>
-      <button id="btn-save">Save</button>
-      <button id="btn-load">Load</button>
-      <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
-      <button id="btn-load-game">Load Game Folder</button>
+      <button id="btn-home">Home</button>
+      <div class="nav-dropdown">
+        <button id="btn-games" class="dropdown-btn">Games ▼</button>
+        <div id="games-dropdown" class="dropdown-content">
+          <!-- Games list will be populated here -->
+        </div>
+      </div>
+      <div class="nav-dropdown">
+        <button id="btn-saves" class="dropdown-btn">Saves ▼</button>
+        <div id="saves-dropdown" class="dropdown-content">
+          <!-- Save files will be populated here -->
+        </div>
+      </div>
+      <button id="btn-save">Save Game</button>
     </nav>
     
-    <div id="game-container" class="game-container"></div>
+    <div id="feedback-toast" class="feedback-toast"></div>
+    
+    <div id="game-container" class="game-container">
+      <div id="start-screen" class="start-screen">
+        <h1>Visual Novel Engine</h1>
+        
+        <div class="start-content">
+          <div class="games-section">
+            <h2>Available Games</h2>
+            <div id="games-list" class="games-list"></div>
+          </div>
+          
+          <div class="saves-section">
+            <h2>Save Files</h2>
+            <div id="saves-list" class="saves-list">
+              <p class="no-saves">No save files found</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module">
     import { VisualNovelEngine } from './src/engine.js';
 
-    const engine = new VisualNovelEngine(document.getElementById('game-container'));
-    
-    // Auto-load default game (for testing)
-    engine.loadGame('./game-data');
+    let engine = null;
+    let currentGame = null;
 
-    document.getElementById('btn-restart').onclick = () => engine.restartGame();
-    document.getElementById('btn-save').onclick = () => engine.saveGame('manual_save');
-    document.getElementById('btn-load').onclick = () => engine.loadSave('manual_save');
-    
-    document.getElementById('btn-load-game').onclick = () => {
-      document.getElementById('folder-input').click();
+    // Load games list and create menu
+    async function loadGameMenu() {
+      try {
+        const response = await fetch('./games-list.json');
+        const gamesList = await response.json();
+        
+        const gamesContainer = document.getElementById('games-list');
+        gamesContainer.innerHTML = '';
+        
+        gamesList.games.forEach(game => {
+          const gameCard = document.createElement('div');
+          gameCard.className = 'game-card';
+          gameCard.innerHTML = `
+            <img src="${game.thumbnail}" alt="${game.title}" class="game-thumbnail" onerror="this.style.display='none'">
+            <h3>${game.title}</h3>
+            <p>${game.description}</p>
+            <button onclick="loadGame('${game.folder}')" class="load-game-btn">Play Game</button>
+          `;
+          gamesContainer.appendChild(gameCard);
+        });
+      } catch (error) {
+        console.error('Failed to load games list:', error);
+        document.getElementById('games-list').innerHTML = '<p>Error loading games list</p>';
+      }
+    }
+
+    // Load a specific game
+    window.loadGame = async function(gamePath) {
+      try {
+        document.getElementById('game-menu').style.display = 'none';
+        document.getElementById('game-container').innerHTML = '<div class="loading">Loading game...</div>';
+        
+        engine = new VisualNovelEngine(document.getElementById('game-container'));
+        currentGame = gamePath;
+        await engine.loadGame(gamePath);
+      } catch (error) {
+        console.error('Failed to load game:', error);
+        showGameMenu();
+      }
     };
 
-    document.getElementById('folder-input').onchange = async (e) => {
-      const files = Array.from(e.target.files);
-      // Handle folder loading logic here
-      console.log('Folder selected:', files);
+    // Show game menu
+    function showGameMenu() {
+      document.getElementById('game-container').innerHTML = `
+        <div id="game-menu" class="game-menu">
+          <h1>Visual Novel Engine</h1>
+          <p>Choose a game to play:</p>
+          <div id="games-list" class="games-list"></div>
+        </div>
+      `;
+      loadGameMenu();
+    }
+
+    // Navigation buttons
+    document.getElementById('btn-home').onclick = () => showGameMenu();
+    document.getElementById('btn-restart').onclick = () => {
+      if (engine && currentGame) {
+        engine.restartGame();
+      }
     };
+    document.getElementById('btn-save').onclick = () => {
+      if (engine) {
+        engine.saveGame('manual_save');
+      }
+    };
+    document.getElementById('btn-load').onclick = () => {
+      if (engine) {
+        engine.loadSave('manual_save');
+      }
+    };
+
+    // Initialize with game menu
+    loadGameMenu();
   </script>
 </body>
 </html>
