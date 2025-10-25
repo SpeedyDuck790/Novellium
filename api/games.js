@@ -90,10 +90,14 @@ async function handlePostGame(req, res) {
     })
   }
 
-  // Validate data structure
-  if (!Array.isArray(characters) || !Array.isArray(events)) {
+  // Validate data structure - characters and events should be objects, not arrays
+  if (typeof characters !== 'object' || typeof events !== 'object') {
     return res.status(400).json({
-      error: 'Characters and events must be arrays'
+      error: 'Characters and events must be objects (not arrays)',
+      example: {
+        characters: { "character_id": { name: "Name", color: "#color" } },
+        events: { "event_id": { type: "dialogue", text: "Hello!" } }
+      }
     })
   }
 

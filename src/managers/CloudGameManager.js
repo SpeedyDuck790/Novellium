@@ -192,7 +192,7 @@ export class CloudGameManager {
     }
 
     try {
-      const response = await fetch(`${this.apiBaseUrl}/games?gameId=${cloudId}`, {
+      const response = await fetch(`${this.apiBaseUrl}/games/${cloudId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -205,12 +205,11 @@ export class CloudGameManager {
 
       return {
         config: game.config,
-        characters: game.characters || [],
-        events: game.events || [],
+        characters: game.characters || {},
+        events: game.events || {},
         gameFolder: `cloud_${game.id}`,
         source: 'cloud',
-        cloudId: game.id,
-        assets: game.game_assets || []
+        cloudId: game.id
       }
     } catch (error) {
       throw new Error(`Failed to load cloud game: ${cloudId}`)

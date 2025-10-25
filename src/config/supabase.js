@@ -1,9 +1,20 @@
 // Supabase configuration for Novellium
 import { createClient } from '@supabase/supabase-js'
 
-// Environment variables (set these in Vercel dashboard)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'YOUR_SUPABASE_URL'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+// Environment variables - these will be set in Vercel dashboard
+// For client-side apps, use NEXT_PUBLIC_ prefix for Vercel deployment
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 
+                   (typeof window !== 'undefined' ? window.SUPABASE_URL : null) ||
+                   'YOUR_SUPABASE_URL'
+
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                       (typeof window !== 'undefined' ? window.SUPABASE_ANON_KEY : null) ||
+                       'YOUR_SUPABASE_ANON_KEY'
+
+// Validate configuration
+if (supabaseUrl === 'YOUR_SUPABASE_URL' || supabaseAnonKey === 'YOUR_SUPABASE_ANON_KEY') {
+  console.warn('⚠️ Supabase environment variables not configured. Using fallback values.')
+}
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -16,15 +27,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Database table names
 export const TABLES = {
-  GAMES: 'games',
-  GAME_ASSETS: 'game_assets',
-  GAME_DOWNLOADS: 'game_downloads'
+  GAMES: 'games'
 }
 
 // Storage buckets
 export const BUCKETS = {
-  GAME_ASSETS: 'game-assets',
-  GAME_THUMBNAILS: 'game-thumbnails'
+  GAME_ASSETS: 'game-assets'
 }
 
 // Helper functions for common database operations
@@ -35,15 +43,7 @@ export class SupabaseGameManager {
     try {
       const { data, error } = await supabase
         .from(TABLES.GAMES)
-        .select(`
-          *,
-          game_assets (
-            id,
-            asset_type,
-            asset_name,
-            file_path
-          )
-        `)
+        .select('*')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
       
@@ -60,10 +60,7 @@ export class SupabaseGameManager {
     try {
       const { data, error } = await supabase
         .from(TABLES.GAMES)
-        .select(`
-          *,
-          game_assets (*)
-        `)
+        .select('*')
         .eq('id', gameId)
         .single()
       
@@ -75,7 +72,24 @@ export class SupabaseGameManager {
     }
   }
 
-  // Upload a new game
+  // Get a specific game by game_id (URL slug)
+  async getGameBySlug(gameSlug) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.GAMES)
+        .select('*')
+        .eq('game_id', gameSlug)
+        .single()
+      
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error fetching game by slug:', error)
+      return null
+    }
+  }
+
+  // Upload a new game (matches builder export format)
   async uploadGame(gameData) {
     try {
       const { data, error } = await supabase
@@ -83,11 +97,13 @@ export class SupabaseGameManager {
         .insert([{
           title: gameData.title,
           author: gameData.author,
-          description: gameData.description,
+          description: gameData.description || '',
+          game_id: gameData.gameId || gameData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
           config: gameData.config,
           characters: gameData.characters,
           events: gameData.events,
-          is_public: gameData.isPublic || true
+          is_public: gameData.isPublic !== false,
+          thumbnail_url: gameData.thumbnailUrl
         }])
         .select()
         .single()
@@ -100,37 +116,53 @@ export class SupabaseGameManager {
     }
   }
 
-  // Upload game assets (images, audio)
-  async uploadAsset(gameId, file, assetType, assetName) {
+  // Update an existing game
+  async updateGame(gameId, gameData) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.GAMES)
+        .update({
+          title: gameData.title,
+          author: gameData.author,
+          description: gameData.description,
+          config: gameData.config,
+          characters: gameData.characters,
+          events: gameData.events,
+          is_public: gameData.isPublic,
+          thumbnail_url: gameData.thumbnailUrl
+        })
+        .eq('id', gameId)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error updating game:', error)
+      throw error
+    }
+  }
+
+  // Upload game asset to storage
+  async uploadAsset(gameId, file, fileName) {
     try {
       // Upload file to storage
-      const fileName = `${gameId}/${assetType}/${assetName}`
+      const filePath = `${gameId}/${fileName}`
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(BUCKETS.GAME_ASSETS)
-        .upload(fileName, file)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
       
       if (uploadError) throw uploadError
 
       // Get public URL
       const { data: urlData } = supabase.storage
         .from(BUCKETS.GAME_ASSETS)
-        .getPublicUrl(fileName)
+        .getPublicUrl(filePath)
 
-      // Save asset reference in database
-      const { data, error } = await supabase
-        .from(TABLES.GAME_ASSETS)
-        .insert([{
-          game_id: gameId,
-          asset_type: assetType,
-          asset_name: assetName,
-          file_path: urlData.publicUrl,
-          file_size: file.size
-        }])
-        .select()
-        .single()
-      
-      if (error) throw error
-      return data
+      return urlData.publicUrl
     } catch (error) {
       console.error('Error uploading asset:', error)
       throw error
@@ -140,14 +172,11 @@ export class SupabaseGameManager {
   // Increment download counter
   async incrementDownloads(gameId) {
     try {
-      const { error } = await supabase
-        .from(TABLES.GAMES)
-        .update({ 
-          download_count: supabase.rpc('increment_downloads', { game_id: gameId })
-        })
-        .eq('id', gameId)
+      const { data, error } = await supabase
+        .rpc('increment_download_count', { target_game_id: gameId })
       
       if (error) throw error
+      return data
     } catch (error) {
       console.error('Error incrementing downloads:', error)
     }

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Integration Demo - Novellium</title>
+    <link rel="stylesheet" href="styles.css?v=4.0">
+    <style>
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+        .demo-section {
+            background: #16213e;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00d4ff;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 212, 255, 0.3);
+        }
+        .demo-button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .demo-button.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .game-demo-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .game-demo-card {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            position: relative;
+        }
+        .game-demo-card.local {
+            border-left: 4px solid #10b981;
+        }
+        .game-demo-card.cloud {
+            border-left: 4px solid #00d4ff;
+        }
+        .source-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .source-badge.local {
+            background: #10b981;
+            color: white;
+        }
+        .source-badge.cloud {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+        .status-indicator.online {
+            background: #10b981;
+            color: white;
+        }
+        .status-indicator.offline {
+            background: #ef4444;
+            color: white;
+        }
+        .status-indicator.demo {
+            background: #f59e0b;
+            color: white;
+        }
+        .step-list {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .step-list ol {
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .highlight {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🧪 Novellium Cloud Integration Demo</h1>
+        <p>This demonstrates how local and cloud games work together in the Novellium library.</p>
+
+        <!-- Current Status -->
+        <div class="demo-section">
+            <h2>📡 Current Status</h2>
+            <div id="status-indicators">
+                <span class="status-indicator offline">Cloud: Offline</span>
+                <span class="status-indicator demo">Mode: Local Only</span>
+            </div>
+            <p id="status-description">
+                Currently showing local games only. Cloud features require Supabase setup.
+            </p>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-section">
+            <h2>🎮 Demo Controls</h2>
+            <button class="demo-button" onclick="showLocalMode()">Show Local Games Only</button>
+            <button class="demo-button warning" onclick="showDemoCloudMode()">Enable Demo Cloud Mode</button>
+            <button class="demo-button success" onclick="refreshGameList()">Refresh Game List</button>
+            <p><small>
+                <strong>Demo Cloud Mode:</strong> Shows mock cloud games to demonstrate the integration.<br>
+                <strong>Production Mode:</strong> Requires actual Supabase setup to load real cloud games.
+            </small></p>
+        </div>
+
+        <!-- Game List -->
+        <div class="demo-section">
+            <h2>📚 Game Library</h2>
+            <p>This shows how local and cloud games appear together in the library:</p>
+            <div id="demo-games-list" class="game-demo-list">
+                <div class="game-demo-card">Loading games...</div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="demo-section">
+            <h2>⚙️ How It Works</h2>
+            <div class="step-list">
+                <h3>Game Loading Process:</h3>
+                <ol>
+                    <li>Library page loads → <span class="highlight">CloudGameManager.getAllGames()</span></li>
+                    <li>Fetch <span class="highlight">local games</span> from <code>gamefolder/</code></li>
+                    <li>Try to fetch <span class="highlight">cloud games</span> from Supabase API</li>
+                    <li>If cloud fails → <span class="highlight">graceful fallback</span> to local only</li>
+                    <li>Combine and display all games with source indicators</li>
+                </ol>
+
+                <h3>Import Process (When Supabase is set up):</h3>
+                <ol>
+                    <li>User creates game in Builder</li>
+                    <li>Clicks "Upload to Cloud" button</li>
+                    <li>Game data sent to <span class="highlight">/api/games</span> endpoint</li>
+                    <li>Stored in Supabase database</li>
+                    <li>Assets uploaded to Supabase Storage</li>
+                    <li>Immediately available to all users globally</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Setup Guide -->
+        <div class="demo-section">
+            <h2>🚀 Setup Guide</h2>
+            <p>To enable real cloud functionality:</p>
+            <div class="step-list">
+                <ol>
+                    <li>Create Supabase account and project</li>
+                    <li>Run <code>database/schema.sql</code> in Supabase SQL Editor</li>
+                    <li>Set environment variables in Vercel:
+                        <ul>
+                            <li><code>NEXT_PUBLIC_SUPABASE_URL</code></li>
+                            <li><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></li>
+                        </ul>
+                    </li>
+                    <li>Deploy to Vercel (API endpoints won't work locally)</li>
+                    <li>Games uploaded by users will be available globally!</li>
+                </ol>
+            </div>
+            <button class="demo-button" onclick="window.open('SUPABASE_SETUP.md', '_blank')">📖 View Full Setup Guide</button>
+        </div>
+
+        <!-- Test Results -->
+        <div class="demo-section">
+            <h2>🧪 Test Results</h2>
+            <div id="test-results">
+                <p>Run the tests above to see results here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let currentMode = 'local';
+        let gamesList = [];
+
+        // Load games based on current mode
+        async function loadGames() {
+            const listContainer = document.getElementById('demo-games-list');
+            listContainer.innerHTML = '<div class="game-demo-card">Loading games...</div>';
+
+            try {
+                if (currentMode === 'demo-cloud') {
+                    // Load with mock cloud games
+                    const { MockCloudGameManager } = await import('./src/managers/MockCloudGameManager.js');
+                    const mockManager = new MockCloudGameManager();
+                    window.DEMO_CLOUD_MODE = true;
+                    gamesList = await mockManager.getAllGames();
+                } else {
+                    // Load only local games
+                    const { cloudGameManager } = await import('./src/managers/CloudGameManager.js');
+                    window.DEMO_CLOUD_MODE = false;
+                    gamesList = await cloudGameManager.getAllGames();
+                }
+
+                displayGames(gamesList);
+                updateStatus();
+            } catch (error) {
+                console.error('Error loading games:', error);
+                listContainer.innerHTML = '<div class="game-demo-card">Error loading games: ' + error.message + '</div>';
+            }
+        }
+
+        function displayGames(games) {
+            const listContainer = document.getElementById('demo-games-list');
+            
+            if (games.length === 0) {
+                listContainer.innerHTML = '<div class="game-demo-card">No games found</div>';
+                return;
+            }
+
+            listContainer.innerHTML = games.map(game => `
+                <div class="game-demo-card ${game.source}">
+                    <div class="source-badge ${game.source}">${getSourceIcon(game.source)} ${game.source.toUpperCase()}</div>
+                    <h3>${game.title}</h3>
+                    <p><strong>Author:</strong> ${game.author}</p>
+                    <p><strong>Description:</strong> ${game.description || 'No description'}</p>
+                    <p><strong>Game Folder:</strong> <code>${game.gameFolder}</code></p>
+                    ${game.downloadCount ? `<p><strong>Downloads:</strong> ${game.downloadCount}</p>` : ''}
+                    ${game.rating && game.rating > 0 ? `<p><strong>Rating:</strong> ⭐ ${game.rating}/5</p>` : ''}
+                    ${game.createdAt ? `<p><strong>Created:</strong> ${new Date(game.createdAt).toLocaleDateString()}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function getSourceIcon(source) {
+            switch (source) {
+                case 'cloud': return '☁️';
+                case 'deployed': return '📦';
+                case 'local': return '📁';
+                default: return '❓';
+            }
+        }
+
+        function updateStatus() {
+            const statusIndicators = document.getElementById('status-indicators');
+            const statusDescription = document.getElementById('status-description');
+            
+            const localCount = gamesList.filter(g => g.source === 'local').length;
+            const cloudCount = gamesList.filter(g => g.source === 'cloud').length;
+            
+            if (currentMode === 'demo-cloud') {
+                statusIndicators.innerHTML = `
+                    <span class="status-indicator demo">Cloud: Demo Mode</span>
+                    <span class="status-indicator demo">Mode: Local + Mock Cloud</span>
+                `;
+                statusDescription.textContent = `Showing ${localCount} local games + ${cloudCount} mock cloud games. This demonstrates how the integration would work with real Supabase.`;
+            } else {
+                statusIndicators.innerHTML = `
+                    <span class="status-indicator offline">Cloud: Offline</span>
+                    <span class="status-indicator online">Local: Working</span>
+                `;
+                statusDescription.textContent = `Showing ${localCount} local games only. Cloud features require Supabase setup and Vercel deployment.`;
+            }
+        }
+
+        // Global functions for buttons
+        window.showLocalMode = function() {
+            currentMode = 'local';
+            loadGames();
+        };
+
+        window.showDemoCloudMode = function() {
+            currentMode = 'demo-cloud';
+            loadGames();
+        };
+
+        window.refreshGameList = function() {
+            loadGames();
+        };
+
+        // Load games on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGames();
+        });
+    </script>
+</body>
+</html>
