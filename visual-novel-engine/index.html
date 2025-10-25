@@ -166,8 +166,8 @@
   </div>
 
   <script type="module">
-    import { VisualNovelEngine } from './src/engine.js?v=2.0';
-    import { SaveManager } from './src/managers/SaveManager.js?v=2.0';
+    import { VisualNovelEngine } from './src/engine.js?v=2.1';
+    import { SaveManager } from './src/managers/SaveManager.js?v=2.1';
 
     let engine = null;
     let currentGame = null;
@@ -176,6 +176,7 @@
     
     console.log('SaveManager loaded:', saveManager);
     console.log('SaveManager has exportAllSaves?', typeof saveManager.exportAllSaves);
+    console.log('Auto-backup initial state:', saveManager.autoBackup);
 
     // Feedback system
     function showFeedback(message, type = 'success') {

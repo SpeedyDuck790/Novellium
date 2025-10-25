@@ -8,6 +8,8 @@ export class SaveManager {
 
   // Save to localStorage and optionally backup to file
   async save(slotName, gameState, gameFolder = null) {
+    console.log('SaveManager.save called:', { slotName, gameFolder, autoBackup: this.autoBackup });
+    
     const saveData = {
       ...gameState.toJSON(),
       gameFolder: gameFolder,
@@ -16,10 +18,15 @@ export class SaveManager {
     
     // Save to localStorage
     localStorage.setItem(this.storageKey + slotName, JSON.stringify(saveData));
+    console.log('Saved to localStorage:', slotName);
     
     // Auto-backup to file if enabled
     if (this.autoBackup) {
+      console.log('Auto-backup enabled, exporting to file...');
       await this.exportSaveToFile(slotName, saveData);
+      console.log('Export completed');
+    } else {
+      console.log('Auto-backup disabled, skipping file export');
     }
     
     return true;
@@ -54,21 +61,29 @@ export class SaveManager {
 
   // Export a single save to downloadable file
   async exportSaveToFile(slotName, saveData = null) {
+    console.log('exportSaveToFile called:', slotName);
+    
     if (!saveData) {
       saveData = this.load(slotName);
-      if (!saveData) return false;
+      if (!saveData) {
+        console.error('No save data found for:', slotName);
+        return false;
+      }
     }
 
+    console.log('Creating blob for save:', slotName);
     const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `${slotName}.vnsave`;
     document.body.appendChild(a);
+    console.log('Triggering download for:', a.download);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
+    console.log('Download triggered successfully');
     return true;
   }
 
