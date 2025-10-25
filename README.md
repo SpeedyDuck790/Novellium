@@ -1,8 +1,9 @@
 # Novellium
 
-
 A modern, web-based visual novel engine with cloud integration, visual builder, and seamless game sharing capabilities. Create, play, and share interactive stories without any setup required.A simple browser-based visual novel engine where you can create and play interactive stories.
 
+> **Author:** James Hill  
+> *Final year RMIT student building pet projects in my spare time.*
 
 
 ## 🌟 Features## What is this?

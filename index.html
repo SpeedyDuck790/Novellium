@@ -94,7 +94,14 @@
         <div class="settings-section">
           <h4>📖 Help</h4>
           <div class="setting-item">
-            <button id="btn-documentation" class="settings-btn help">📚 Documentation</button>
+            <div class="dropdown">
+              <button class="settings-btn help dropdown-toggle">📚 Documentation ▼</button>
+              <div class="dropdown-content">
+                <a href="#" id="btn-readme" class="dropdown-item">📖 README</a>
+                <a href="#" id="btn-user-guide" class="dropdown-item">👤 User Guide</a>
+                <a href="#" id="btn-game-format" class="dropdown-item">🎮 Game Format</a>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -962,12 +969,39 @@
         e.target.value = '';
       };
       
-      document.getElementById('btn-documentation').onclick = () => {
-        try {
-          window.open('README.pdf', '_blank');
-        } catch (error) {
-          alert('Documentation PDF not found. Please ensure README.pdf is in the project directory.');
+      // Documentation dropdown functionality
+      const dropdownToggle = document.querySelector('.dropdown-toggle');
+      const dropdown = document.querySelector('.dropdown');
+      
+      dropdownToggle.onclick = (e) => {
+        e.preventDefault();
+        dropdown.classList.toggle('active');
+      };
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('active');
         }
+      });
+      
+      // Documentation link handlers
+      document.getElementById('btn-readme').onclick = (e) => {
+        e.preventDefault();
+        window.open('docs/pdf-viewer.html?doc=README.md', '_blank');
+        dropdown.classList.remove('active');
+      };
+      
+      document.getElementById('btn-user-guide').onclick = (e) => {
+        e.preventDefault();
+        window.open('docs/pdf-viewer.html?doc=docs/USER-GUIDE.md', '_blank');
+        dropdown.classList.remove('active');
+      };
+      
+      document.getElementById('btn-game-format').onclick = (e) => {
+        e.preventDefault();
+        window.open('docs/pdf-viewer.html?doc=docs/GAME-FORMAT.md', '_blank');
+        dropdown.classList.remove('active');
       };
     });
     
