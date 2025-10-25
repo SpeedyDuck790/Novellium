@@ -50,18 +50,21 @@ SELECT
 WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'game-assets');
 
 -- Fix RLS policies for storage uploads
--- Drop existing restrictive policies
+-- Drop existing policies (both restrictive and permissive)
+DROP POLICY IF EXISTS "Game assets are publicly accessible" ON storage.objects;
+DROP POLICY IF EXISTS "Anyone can upload game assets" ON storage.objects;
+DROP POLICY IF EXISTS "Anyone can update game assets" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can upload game assets" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update their own assets" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete their own assets" ON storage.objects;
 
 -- Recreate permissive policies for anonymous uploads
+CREATE POLICY "Game assets are publicly accessible" ON storage.objects
+  FOR SELECT USING (bucket_id = 'game-assets');
+
 CREATE POLICY "Anyone can upload game assets" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'game-assets');
 
 CREATE POLICY "Anyone can update game assets" ON storage.objects  
   FOR UPDATE USING (bucket_id = 'game-assets')
   WITH CHECK (bucket_id = 'game-assets');
-
-CREATE POLICY "Game assets are publicly accessible" ON storage.objects
-  FOR SELECT USING (bucket_id = 'game-assets');

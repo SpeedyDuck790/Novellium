@@ -192,7 +192,7 @@ export class CloudGameManager {
     }
 
     try {
-      const response = await fetch(`${this.apiBaseUrl}/games/${cloudId}`, {
+      const response = await fetch(`${this.apiBaseUrl}/games?gameId=${cloudId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })

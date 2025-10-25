@@ -476,6 +476,7 @@
     // Load a specific game
     window.loadGame = async function(gamePath) {
       try {
+        console.log('loadGame called with gamePath:', gamePath, 'type:', typeof gamePath);
         showFeedback('Loading game...', 'info');
         
         // Hide start screen
