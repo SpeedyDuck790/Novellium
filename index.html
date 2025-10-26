@@ -507,6 +507,18 @@
         const gameTitle = gameInfo ? gameInfo.title : 'Playing Game';
         document.getElementById('current-page-title').innerHTML = `<span class="brand-gradient">Novellium</span> - ${gameTitle}`;
         
+        // Show save button now that game is loaded
+        const btnSave = document.getElementById('btn-save');
+        if (btnSave) {
+          btnSave.style.display = 'block';
+          btnSave.onclick = async () => {
+            if (engine && currentGame) {
+              await engine.quickSave();
+              showFeedback('Game saved!', 'success');
+            }
+          };
+        }
+        
         showFeedback('Game loaded!');
       } catch (error) {
         console.error('Failed to load game:', error);
@@ -583,6 +595,16 @@
     function showStartScreen() {
       // Restore original navbar title
       document.getElementById('current-page-title').innerHTML = '<span class="brand-gradient">Novellium</span>';
+      
+      // Hide save button when returning to start screen
+      const btnSave = document.getElementById('btn-save');
+      if (btnSave) {
+        btnSave.style.display = 'none';
+      }
+      
+      // Clear current game reference
+      currentGame = null;
+      engine = null;
       
       document.getElementById('game-container').innerHTML = `
         <div id="start-screen" class="start-screen">
