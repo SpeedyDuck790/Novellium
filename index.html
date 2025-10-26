@@ -513,7 +513,7 @@
           btnSave.style.display = 'block';
           btnSave.onclick = async () => {
             if (engine && currentGame) {
-              await engine.quickSave();
+              await engine.saveGame('quicksave');
               showFeedback('Game saved!', 'success');
             }
           };
@@ -1118,7 +1118,7 @@
           btnSave.style.display = 'block';
           btnSave.onclick = async () => {
             if (engine && currentGame) {
-              await engine.quickSave();
+              await engine.saveGame('quicksave');
               showFeedback('Game saved!', 'success');
             }
           };
